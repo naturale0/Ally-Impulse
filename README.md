@@ -10,6 +10,15 @@ A Decky Loader plugin for genuine, game-driven impulse-trigger vibration on the 
 - Library → Steam Quick Access Menu through the kernel’s Xbox+A shortcut.
 - Automatically finds the controller and provides a button to copy the reusable launch option.
 
+## Tested configuration
+
+Tested only with **Forza Horizon 5**, using **GE-Proton11-5** on **Xbox Ally X**:
+
+- **OS:** SteamOS **3.8.28**, build **20260922.1**.
+- **Kernel:** `6.18.50-valve2-1-neptune-618-gc7289a96b14d`.
+
+Other games, OS versions, kernels and Proton versions have not been tested. Results are user-reported; the latest plugin’s Library/QAM mapping, clipboard behavior and sleep/wake recovery are not independently verified.
+
 ## Install
 
 Requires SteamOS, Decky Loader and Python 3. The current bridge checks for Xbox Ally X board `RC73XA` and kernel `6.18.50-valve2-1-neptune-618-gc7289a96b14d`. InputPlumber is optional; if active, it is temporarily stopped and blocked from restarting while the bridge runs.
