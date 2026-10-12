@@ -17,11 +17,11 @@ Tested only with **Forza Horizon 5**, using **GE-Proton11-5** on **Xbox Ally X**
 - **OS:** SteamOS **3.8.28**, build **20260922.1**.
 - **Kernel:** `6.18.50-valve2-1-neptune-618-gc7289a96b14d`.
 
-Other games, OS versions, kernels and Proton versions have not been tested. Results are user-reported; the latest plugin’s Library/QAM mapping, clipboard behavior and sleep/wake recovery are not independently verified.
+Other games, OS versions, kernels and Proton versions have not been tested. There is no exact kernel-version restriction: compatible kernels may run, but passing the interface checks does not verify physical trigger behavior. Kernels without the required Ally driver interfaces are rejected with an explanation. Results are user-reported; the latest plugin’s Library/QAM mapping, clipboard behavior and sleep/wake recovery are not independently verified.
 
 ## Install
 
-Requires SteamOS, Decky Loader and Python 3. The current bridge checks for Xbox Ally X board `RC73XA` and kernel `6.18.50-valve2-1-neptune-618-gc7289a96b14d`. InputPlumber is optional; if active, it is temporarily stopped and blocked from restarting while the bridge runs.
+Requires SteamOS, Decky Loader and Python 3. The bridge requires Xbox Ally X board `RC73XA` and USB controller `0b05:1b4c`. Other kernel versions are allowed when they provide UHID, the expected gamepad axes/buttons and the Ally driver’s `gamepad_mode`, `apply_all` and rear-button remapping interfaces. InputPlumber is optional; if active, it is temporarily stopped and blocked from restarting while the bridge runs.
 
 1. Exit games and stop any existing standalone bridge.
 2. Copy this repository into your Decky plugins directory as `ally-impulse`, normally `/home/deck/homebrew/plugins/ally-impulse`. The compiled frontend is included in `dist/`.

@@ -119,6 +119,29 @@ def restore(path):
     if errors: raise RuntimeError('; '.join(errors))
     path.unlink()
 
+def check_input_capabilities(node):
+    """Read-only checks before changing service or controller configuration."""
+    fd=os.open(node,os.O_RDONLY|os.O_NONBLOCK|os.O_CLOEXEC)
+    try:
+        identity=bytearray(8)
+        fcntl.ioctl(fd,0x80084502,identity) # EVIOCGID
+        bus,vendor,product,version=struct.unpack('=4H',identity)
+        if (bus,vendor,product)!=(3,0x0b05,0x1b4c):
+            raise RuntimeError('Unexpected physical gamepad input identity on '+node)
+        for code in (0,1,3,4,2,5,16,17):
+            try: value,low,high,*unused=absinfo(fd,code)
+            except OSError as exc:
+                raise RuntimeError(f'Kernel gamepad interface is missing required axis {code} on {node}') from exc
+            if high<=low or (code in (16,17) and (low,high)!=(-1,1)):
+                raise RuntimeError(f'Unsupported range for gamepad axis {code}: {low}..{high}')
+        keys=bytearray(96)
+        fcntl.ioctl(fd,0x80604521,keys)
+        required=(304,305,307,308,310,311,314,315,317,318)
+        missing=[code for code in required if not keys[code//8] & 1<<(code%8)]
+        if missing: raise RuntimeError('Kernel gamepad interface is missing required buttons: '+str(missing))
+    finally:
+        os.close(fd)
+
 def run(args):
     inv=hw.inventory()
     if args.node is None:
@@ -126,18 +149,28 @@ def run(args):
         if len(matches)==1: args.node=matches[0]
     if not args.execute:
         print(json.dumps(inv,indent=2)); print('Dry run. No devices opened or services changed.'); return
-    if os.geteuid()!=0 or hw.board()!='RC73XA' or inv['kernel']!=hw.KERNEL:
-        raise RuntimeError('Requires sudo, Xbox Ally X RC73XA and the specified kernel')
+    if os.geteuid()!=0:
+        raise RuntimeError('Requires root privileges for controller access')
+    if hw.board()!='RC73XA':
+        raise RuntimeError('Requires Xbox Ally X board RC73XA')
+    print('Running kernel: '+inv['kernel'],flush=True)
+    if inv['kernel']!=hw.KERNEL:
+        print('This kernel is not the tested baseline; checking required Ally interfaces. Physical motor compatibility remains unverified.',flush=True)
     entries=[x for x in inv['hidraw'] if x['node']==args.node and len(x['gamepad_events'])==1]
     if len(entries)!=1: raise RuntimeError('Select the physical gamepad hidraw node from inventory')
-    if not Path('/dev/uhid').exists(): raise RuntimeError('Load the uhid module first')
+    if not Path('/dev/uhid').exists(): raise RuntimeError('This kernel requires UHID support: load the uhid module first')
+    check_input_capabilities(entries[0]['gamepad_events'][0])
     # The kernel sysfs interface provides the configuration directly; no daemon required.
     attrs=list(Path('/sys/bus/hid/devices').glob('0003:0B05:1B4C.*/btn_m1/remap'))
     if len(attrs)!=1: raise RuntimeError('Expected one Ally kernel configuration interface')
     base=attrs[0].parent.parent
     mode=hw.read(base/'gamepad_mode')
-    if mode not in ('1','2','3') or not (base/'apply_all').exists():
-        raise RuntimeError('Unsupported Ally kernel configuration interface')
+    required_attrs=('gamepad_mode','apply_all','btn_m1/remap','btn_m2/remap')
+    missing=[name for name in required_attrs if not (base/name).exists()]
+    if mode not in ('1','2','3') or missing:
+        raise RuntimeError('Required Ally kernel configuration interface is unavailable; missing='+str(missing)+', mode='+str(mode))
+    for name in ('btn_m1/remap','btn_m2/remap'):
+        if not hw.read(base/name): raise RuntimeError('Cannot read required Ally attribute: '+name)
     uid=int(os.environ.get('SUDO_UID','0')); gid=int(os.environ.get('SUDO_GID','0'))
     if not uid: raise RuntimeError('Run sudo from the Steam user account, not a root login')
     services=[s for s in hw.SERVICES if not (args.decky_managed and s=='plugin_loader.service') and hw.run(['systemctl','is-active','--quiet',s],check=False).returncode==0]
