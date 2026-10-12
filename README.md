@@ -62,6 +62,12 @@ pnpm install --frozen-lockfile --ignore-scripts
 pnpm build
 ```
 
+## Development and disclaimer
+
+This project is **vibe coded**: it was developed with substantial AI assistance and iterative testing on the author's device.
+
+There is no intentionally malicious code in this project. However, it is provided **as is**, without warranty. Use it at your own risk. I am not responsible for any malfunction, data loss or other damage resulting from its use. See the [MIT license](LICENSE) for the full warranty and liability terms.
+
 ## License
 
 [MIT](LICENSE). Included third-party material retains its own notices: the Xbox HID descriptor is adapted from [LizardByte/libvirtualhid](bridge/reference/libvirtualhid-MIT.md), and Decky template/build configuration notices are in [licenses/](licenses/).
