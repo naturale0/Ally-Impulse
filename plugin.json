@@ -1,0 +1,15 @@
+{
+  "name": "Ally Impulse",
+  "author": "RTX Deck",
+  "flags": [
+    "root"
+  ],
+  "api_version": 1,
+  "publish": {
+    "tags": [
+      "controller",
+      "haptics"
+    ],
+    "description": "Independent impulse trigger control for Xbox Ally X."
+  }
+}
