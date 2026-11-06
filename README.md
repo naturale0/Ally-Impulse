@@ -96,7 +96,7 @@ The standalone bridge and plugin startup/controls have user-reported success. In
 
 In my experience, once the bridge is enabled, there is no need to manually disable and re-enable it after sleep/wake or even a system restart. The enabled setting is saved, and the plugin starts the bridge again when Decky loads after a restart.
 
-This is my experience on the tested setup, not a guarantee for every system. The bridge process does not survive a reboot, and explicit sleep/wake reconnection logic is not implemented.
+This is my experience on the tested setup, not a guarantee for every system. The bridge process may not survive a reboot, and explicit sleep/wake reconnection logic is not implemented.
 
 ## Build
 
