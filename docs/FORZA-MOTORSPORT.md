@@ -2,7 +2,7 @@
 
 ## Reported working configuration
 
-The user confirmed Motorsport controller input and Ally Impulse feedback working after the exact-build controller-ID patch, using GE-Proton11-3-FM and the existing [FM Tools/Xodus setup](https://github.com/naturale0/fm-tools). This is user-reported gameplay verification, not an independent hardware test by the code authoring assistant. Other Proton DLL builds are not covered by this patch.
+The user confirmed Motorsport controller input and Ally Impulse feedback working after the exact-build controller-ID patch, using GE-Proton11-3-FM and the existing [FM Tools](https://github.com/SoHiEarth/fm-tools) and [Xodus login/service setup](https://github.com/SoHiEarth/fm-tools#instructions). This is user-reported gameplay verification, not an independent hardware test by the code authoring assistant. Other Proton DLL builds are not covered by this patch.
 
 The problem is Wine’s `IRawGameController2.NonRoamableId` implementation in this build: its controller-ID path rejects non-Steam VID/PID values. The workaround removes two conditional rejection branches so the existing ID formatter can run. It does not change controller input or four-channel haptic processing, and does not implement a general stable controller identity.
 

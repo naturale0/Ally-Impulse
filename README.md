@@ -18,7 +18,7 @@ User-tested on **Xbox Ally X**:
 | --- | --- | --- |
 | Forza Horizon 5 | GE-Proton11-5 | Standard Ally Impulse setup |
 | F1 23 | GE-Proton11-5 | Standard Ally Impulse setup |
-| Forza Motorsport (2023) | GE-Proton11-3-FM | FM Tools/Xodus setup and the controller-ID patch below |
+| Forza Motorsport (2023) | GE-Proton11-3-FM | [FM Tools and Xodus setup](https://github.com/SoHiEarth/fm-tools#instructions), plus the controller-ID patch below |
 
 Reported SteamOS/kernel baseline:
 
@@ -54,7 +54,12 @@ The wrapper selects the SDL input route checked against **GE-Proton11-5**. In pr
 
 Motorsport has also been user-tested successfully with **GE-Proton11-3-FM**, but this build needs a controller-ID workaround in Wine’s `windows.gaming.input.dll`. Without it, Motorsport may reject Ally Impulse’s virtual controller. The patch changes controller identification, not trigger-feedback processing.
 
-Keep your working [FM Tools/Xodus setup](https://github.com/naturale0/fm-tools), Ally Impulse launch wrapper and Steam Input disabled. **Exit Motorsport completely**, then run from this repository’s directory as the Steam user, **without sudo**:
+Set up Motorsport’s runtime and authentication first:
+
+- [FM Tools](https://github.com/SoHiEarth/fm-tools): GE-Proton11-3-FM and the prerequisites for running Motorsport on Linux.
+- [Xodus login and service setup](https://github.com/SoHiEarth/fm-tools#instructions): sign in with `xodus-cli login` and keep `xodus-service` running before launching the game. Follow the repository’s dependencies and complete setup instructions.
+
+Keep that working setup, the Ally Impulse launch wrapper and Steam Input disabled. **Exit Motorsport completely**, then run from this repository’s directory as the Steam user, **without sudo**:
 
 ```sh
 # Inspect both DLLs; no files are changed.
