@@ -17,6 +17,7 @@ User-tested on **Xbox Ally X**:
 | Game | Proton | Additional requirement |
 | --- | --- | --- |
 | Forza Horizon 5 | GE-Proton11-5 | Standard Ally Impulse setup |
+| F1 23 | GE-Proton11-5 | Standard Ally Impulse setup |
 | Forza Motorsport (2023) | GE-Proton11-3-FM | FM Tools/Xodus setup and the controller-ID patch below |
 
 Reported SteamOS/kernel baseline:
@@ -47,7 +48,7 @@ The launch option normally looks like:
 /home/deck/homebrew/plugins/ally-impulse/game-env.sh %command%
 ```
 
-The wrapper selects the SDL input route checked against **GE-Proton11-5**. The bridge is not tied to that version or to Forza, but other games and Proton builds may need different configuration. Universal game compatibility is not guaranteed.
+The wrapper selects the SDL input route checked against **GE-Proton11-5**. In principle, other games can work with this setup if they recognize the virtual Xbox controller and send independent LT/RT vibration through the Wine/SDL path. **Using GE-Proton11-5 alone does not guarantee impulse-trigger support.** Games that issue only ordinary two-motor rumble cannot provide genuine trigger feedback through this bridge; some games may need additional compatibility fixes. The bridge is not tied to Forza or a particular Proton version, but unlisted games and configurations remain unconfirmed.
 
 ## Forza Motorsport (2023): required patch
 
