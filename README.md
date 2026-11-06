@@ -12,12 +12,19 @@ A Decky Loader plugin for genuine, game-driven impulse-trigger vibration on the 
 
 ## Tested configuration
 
-Tested only with **Forza Horizon 5**, using **GE-Proton11-5** on **Xbox Ally X**:
+User-tested on **Xbox Ally X**:
+
+| Game | Proton | Additional requirement |
+| --- | --- | --- |
+| Forza Horizon 5 | GE-Proton11-5 | Standard Ally Impulse setup |
+| Forza Motorsport (2023) | GE-Proton11-3-FM | FM Tools/Xodus setup and the controller-ID patch below |
+
+Reported SteamOS/kernel baseline:
 
 - **OS:** SteamOS **3.8.28**, build **20260922.1**.
 - **Kernel:** `6.18.50-valve2-1-neptune-618-gc7289a96b14d`.
 
-Other games, OS versions, kernels and Proton versions have not been tested. There is no exact kernel-version restriction: compatible kernels may run, but passing the interface checks does not verify physical trigger behavior. Kernels without the required Ally driver interfaces are rejected with an explanation. Results are user-reported; the latest plugin’s Library/QAM mapping, clipboard behavior and sleep/wake recovery are not independently verified.
+Other games and configurations have not been confirmed. There is no exact kernel-version restriction: compatible kernels may run, but passing the interface checks does not verify physical trigger behavior. Kernels without the required Ally driver interfaces are rejected with an explanation. Results are user-reported; the latest plugin’s Library/QAM mapping, clipboard behavior and sleep/wake recovery are not independently verified.
 
 ## Install
 
@@ -41,6 +48,30 @@ The launch option normally looks like:
 ```
 
 The wrapper selects the SDL input route checked against **GE-Proton11-5**. The bridge is not tied to that version or to Forza, but other games and Proton builds may need different configuration. Universal game compatibility is not guaranteed.
+
+## Forza Motorsport (2023): required patch
+
+Motorsport has also been user-tested successfully with **GE-Proton11-3-FM**, but this build needs a controller-ID workaround in Wine’s `windows.gaming.input.dll`. Without it, Motorsport may reject Ally Impulse’s virtual controller. The patch changes controller identification, not trigger-feedback processing.
+
+Keep your working [FM Tools/Xodus setup](https://github.com/naturale0/fm-tools), Ally Impulse launch wrapper and Steam Input disabled. **Exit Motorsport completely**, then run from this repository’s directory as the Steam user, **without sudo**:
+
+```sh
+# Inspect both DLLs; no files are changed.
+python3 tools/motorsport-wgi-fix.py
+
+# Only after the inspection accepts the exact builds:
+python3 tools/motorsport-wgi-fix.py --apply
+```
+
+The tool discovers the Proton installation and Motorsport prefix, verifies the exact DLL hashes, backs up originals and patches both copies. It refuses unknown builds. Relaunch the game afterward. If you previously added the unsuccessful `PROTON_EMULATE_STEAMINPUT=1` workaround, remove it; retain the working FM Tools options and Ally Impulse wrapper.
+
+To undo, close Motorsport and run:
+
+```sh
+python3 tools/motorsport-wgi-fix.py --restore
+```
+
+This is specific to the checked **GE-Proton11-3-FM DLL build**, not every Proton version. Updates can replace it or make it unnecessary. If discovery fails or a hash is rejected, follow the [detailed patch instructions](docs/FORZA-MOTORSPORT.md); do not reuse the byte offsets on another build.
 
 ## How it works
 
