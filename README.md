@@ -92,6 +92,12 @@ The plugin needs root privileges for device access and temporary service managem
 
 The standalone bridge and plugin startup/controls have user-reported success. In-game behavior of the latest plugin, Library/QAM mapping, clipboard behavior and sleep recovery are not independently verified. See [details and recovery instructions](docs/DETAILS.md).
 
+## Sleep/wake and system restarts
+
+In my experience, once the bridge is enabled, there is no need to manually disable and re-enable it after sleep/wake or even a system restart. The enabled setting is saved, and the plugin starts the bridge again when Decky loads after a restart.
+
+This is my experience on the tested setup, not a guarantee for every system. The bridge process does not survive a reboot, and explicit sleep/wake reconnection logic is not implemented.
+
 ## Build
 
 ```sh
