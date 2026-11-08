@@ -1,12 +1,6 @@
 # Ally Impulse — Decky plugin
 
-Xbox Ally X independent, game-driven LT/RT vibration with a Decky toggle and 0–100% strength slider. Includes M1→R3 and M2→L3. InputPlumber is not required.
-
-## What is confirmed
-
-You reported the standalone bridge working on your Ally. This plugin packages that corrected virtual Xbox Series Bluetooth HID path and adds management and live trigger scaling. The new Decky frontend/backend integration and strength controls have **not yet been confirmed on your device**. No device output or service changes were performed while building the plugin.
-
-The bridge is not tied to FH5 or an AppID: any client that sends supported four-channel Xbox output can use it. **“All impulse-trigger games” cannot be guaranteed**: games use different Windows APIs, Proton versions and controller detection rules. Some select only two-motor XInput, even though their Windows version supports impulse triggers. The plugin cannot recover channels that the game/runtime never submits.
+Xbox Ally X independent, game-driven LT/RT vibration with a Decky toggle and 0–100% strength slider. Includes M1→R3 and M2→L3.
 
 ## Install
 
@@ -20,9 +14,9 @@ The bridge is not tied to FH5 or an AppID: any client that sends supported four-
    sudo systemctl restart plugin_loader.service
    ```
 
-   This is a local/manual plugin, not a Decky store listing. If the `ally-impulse` destination already exists, stop its bridge and move the old folder aside first instead of copying over it. Use your actual Decky home if different.
+   If the `ally-impulse` destination already exists, stop its bridge and move the old folder aside first instead of copying over it. Use your actual Decky home if different.
 3. Open Decky → **Ally Impulse**. Enable **trigger vibration** before starting a game. The plugin discovers the physical pad automatically, loads UHID if needed and waits for the virtual controller to be ready. Decky remains running. Only an active InputPlumber service is paused if one is installed.
-4. Keep an external keyboard or touch input available for this first plugin session. Existing bridge limitations remain: the built-in rear-key keyboard interface is grabbed, the Library/QAM shortcut uses the kernel driver’s Xbox+A sequence when qam_mode is available, and keys sharing the grabbed interface may be suppressed.
+4. Keep an external keyboard or touch input available for this first plugin session. The built-in rear-key keyboard interface is grabbed, the Library/QAM shortcut uses the kernel driver’s Xbox+A sequence when qam_mode is available, and keys sharing the grabbed interface may be suppressed.
 
 ## Across games
 
@@ -36,7 +30,7 @@ The wrapper enables SDL Xbox HIDAPI and selects the SDL controller route with th
 
 This plugin does not modify other games' launch options or inject DLLs. There is no reliable setting in Decky that forces every game engine to use a four-channel API. The virtual pad is available system-wide while the bridge is running; the wrapper is a reusable per-game runtime selection. It allows only virtual 045e:0b13 controllers in SDL, so other controllers are excluded in games launched through it. Unplug other actual Series Bluetooth controllers with that same VID/PID during initial validation.
 
-FH5 on GE-Proton11-5 is the starting configuration from the working-bridge discussion; no independent gameplay capture was reviewed here. Other titles/builds should be confirmed individually by physical feedback and the plugin's **Trigger feedback received this session** indicator. That indicator counts incoming nonzero trigger requests, including while trigger output is disabled; it does not identify the sending process or prove physical vibration.
+FH5 on GE-Proton11-5 is the starting configuration from the working-bridge discussion. Other titles/builds should be confirmed individually by physical feedback and the plugin's **Trigger feedback received this session** indicator. That indicator counts incoming nonzero trigger requests, including while trigger output is disabled; it does not identify the sending process or prove physical vibration.
 
 ## Controls
 
