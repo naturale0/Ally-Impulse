@@ -1,31 +1,41 @@
-# Expected Decky interface
+# Decky interface guide
 
-This wireframe shows the current control order with an example running game and saved profile. It is an illustration, not a screenshot or a proposed UI change. The complete panel is shown; on-device it scrolls.
+The illustration below shows Ally Impulse with a running game and a saved profile. **Example Game** is a placeholder. The full panel is shown; on the device, the content scrolls as needed.
 
-![Annotated Ally Impulse panel with approximate control sizes](images/decky-interface-wireframe.png)
+![Ally Impulse interface showing an Example Game profile and annotated control sizes](images/decky-interface-wireframe.png)
 
-## Control order
+## Controls, from top to bottom
 
-1. **Trigger Haptics** toggle, without a helper description. Turning it off invokes the existing backend stop-and-restore command.
-2. **Haptics stength** slider, without a preview/silent description. Strength preview behavior is retained.
-3. **Active profile:** followed by the game name on the same line, with its profile description below.
-4. **Use default for this game**, when applicable, with its description below the button.
-5. Connection/feedback status and button mappings. The duplicated Steam Input/launch-option hint is omitted.
-6. **Copy launch option**, immediately followed by the exact launch command in a read-only, selectable, horizontally scrollable text box. Paste/Steam Input instructions follow the box; copy feedback appears afterward when applicable.
+1. **Trigger Haptics** — starts the controller bridge when enabled. Switching it off stops the bridge and restores the physical controller. Exit the game before switching it off.
+2. **Haptics stength** — adjusts trigger intensity from 0–100%, in 5% steps. Changing the value while haptics are enabled plays a short preview.
+3. **Active profile:** — shows the game whose settings are being edited, or **Default profile** when no game is selected. The description below explains whether the game uses saved or default settings.
+4. **Use default for this game** — removes the game’s saved override. This button appears only for a game with customized settings; its explanation is below it.
+5. **Controller status and mappings** — shows the connection state, whether trigger requests have been received, and the rear-button and Library mappings. Errors appear at the end of this block.
+6. **Copy launch option** — copies the command displayed directly below the button. The command field is read-only, supports text selection and scrolls horizontally. Steam setup instructions follow it, with feedback after a copy attempt.
 
-There is no separate **Stop controller bridge** button. The Python backend is unchanged.
+See [per-game profiles](../README.md#per-game-trigger-profiles) for automatic profile selection and [troubleshooting](DETAILS.md#troubleshooting) if the expected game or controller state is not shown.
 
-## Sizing
+## Layout and sizing
 
-- The drawing assumes an approximately 320 CSS-pixel-wide panel, with 16-pixel side padding.
-- Profile and status text are explicitly set to **13 px** with **19.5 px** line height in the source.
-- The launch-command field is always visible below the copy button: **52 px** high, full available width, **12 px** monospace text and **18 px** line height. It does not wrap and supports horizontal scrolling and text selection without editing. Copy feedback is also **12 px** and appears only after a copy attempt.
-- Button sizes (approximately **288 × 38 px**), switch size (approximately **44 × 24 px**) and slider width (approximately **280 px**) are illustrative. Decky supplies their native styling, fonts and spacing; actual rendering may differ across Steam/Decky versions and display scaling.
-- Native Decky components also determine description placement and wrapping within each control group.
+The illustration is a wireframe, not a screenshot. Decky supplies native control styling, so spacing, fonts and wrapping can vary with the Steam/Decky version and display scaling.
 
-## Conditional content
+| Element | Size |
+| --- | --- |
+| Panel in the illustration | Approximately 320 CSS px wide, with 16 px side padding |
+| Profile and status text | 13 px, with 19.5 px line height |
+| Buttons in the illustration | Approximately 288 × 38 px |
+| Toggle in the illustration | Approximately 44 × 24 px |
+| Slider track in the illustration | Approximately 280 px wide |
+| Launch-option field | Full available width; 52 px high; 12 px monospace text with 18 px line height |
+| Copy feedback | 12 px text |
 
-- **Use default for this game** appears only when the running game has a saved override.
-- Controller feedback status appears while the virtual controller is ready.
-- Errors appear after the status/mappings block when present.
-- Copy feedback appears after the setup instructions following a copy attempt. The launch-command box is always visible directly below the copy button.
+The launch-option field stays on one line. Scroll horizontally to view the complete command, or select and copy its text manually.
+
+## Content that appears when needed
+
+- A saved game profile adds the **Use default for this game** button and its description.
+- A ready controller adds the trigger-feedback status line.
+- Startup or runtime errors add an error message to the status block.
+- A copy attempt adds a success or failure message below the setup instructions.
+
+These additions, long game names and wrapped descriptions can change the panel’s total height.
