@@ -21,27 +21,44 @@ User-tested on **Xbox Ally X**:
 | F1 23 | GE-Proton11-5 | Standard Ally Impulse setup |
 | Forza Motorsport (2023) | GE-Proton11-3-FM | [FM Tools and Xodus setup](https://github.com/SoHiEarth/fm-tools#instructions), plus the controller-ID patch below |
 
-Reported SteamOS/kernel baseline:
+Reported tested SteamOS/kernel combinations:
 
-- **OS:** SteamOS **3.8.28**, build **20260922.1**.
-- **Kernel:** `6.18.50-valve2-1-neptune-618-gc7289a96b14d`.
+| Operating system | Build | Kernel version |
+| --- | --- | --- |
+| SteamOS 3.8.28 | 20260922.1 | `6.18.50-valve2-1-neptune-618-gc7289a96b14d` |
+| SteamOS 3.9.5 | 20261023.100 | `7.2.7-valve2-2-neptune-72-g31504582a073` (64-bit) |
 
-Other games and configurations have not been confirmed. There is no exact kernel-version restriction: compatible kernels may run, but passing the interface checks does not verify physical trigger behavior. Kernels without the required Ally driver interfaces are rejected with an explanation. Results are user-reported; the latest plugin’s Library/QAM mapping, clipboard behavior and sleep/wake recovery are not independently verified.
+Everything continues to work well after my update to SteamOS 3.9.5 and the kernel listed above.
+
+Other games and configurations have not been confirmed. There is no exact kernel-version restriction: compatible kernels may run, but passing the interface checks does not verify physical trigger behavior. Kernels without the required Ally driver interfaces are rejected with an explanation. Results are user-reported.
 
 ## Install
 
 Requires SteamOS, Decky Loader and Python 3. The bridge requires Xbox Ally X board `RC73XA` and USB controller `0b05:1b4c`. Other kernel versions are allowed when they provide UHID, the expected gamepad axes/buttons and the Ally driver’s `gamepad_mode`, `apply_all` and rear-button remapping interfaces. InputPlumber is optional; if active, it is temporarily stopped and blocked from restarting while the bridge runs.
 
-1. Exit games and stop any existing standalone bridge.
-2. Copy this repository into your Decky plugins directory as `ally-impulse`, normally `/home/deck/homebrew/plugins/ally-impulse`. The compiled frontend is included in `dist/`.
-3. Restart Decky:
+Exit games and stop any existing standalone bridge before installing or updating. Choose either installation method below.
+
+### Option 1: Install the plugin ZIP through Decky (GUI)
+
+1. Download the packaged **Ally Impulse plugin ZIP** to your Ally. Use the installable plugin ZIP, not GitHub’s **Source code (zip)** archive.
+2. In Gaming Mode, open **Decky → Settings** (the gear icon).
+3. Under **General**, enable **Developer Mode** if the Developer section is not already visible.
+4. Open **Developer → Install Plugin from ZIP File**, choose **Browse**, and select the downloaded plugin ZIP.
+5. Confirm the installation or update prompt. Ally Impulse should then appear in your Decky plugin list.
+
+### Option 2: Copy the repository manually
+
+1. Copy this repository into your Decky plugins directory as `ally-impulse`, normally `/home/deck/homebrew/plugins/ally-impulse`. The compiled frontend is included in `dist/`.
+2. Restart Decky:
 
    ```sh
    sudo systemctl restart plugin_loader.service
    ```
 
-4. Open **Decky → Ally Impulse** and enable trigger vibration before starting a game.
-5. Disable Steam Input for that game. Use **Copy launch option**, then paste into **Steam → game Properties → General → Launch Options**. Save any existing launch options before editing.
+### After either installation method
+
+1. Open **Decky → Ally Impulse** and enable trigger vibration before starting a game.
+2. Disable Steam Input for that game. Use **Copy launch option**, then paste into **Steam → game Properties → General → Launch Options**. Save any existing launch options before editing.
 
 The launch option normally looks like:
 
@@ -89,9 +106,9 @@ Game’s independent LT/RT requests → Proton/SDL → virtual Xbox Series HID
 
 The plugin creates a virtual Xbox Series Bluetooth HID controller using Linux UHID; no Bluetooth pairing is needed. It forwards physical controls, scales LT/RT independently and leaves grip amplitudes unchanged. Turning vibration off keeps the virtual controller connected. Use **Stop controller bridge** after exiting the game to restore the original controller configuration and any paused InputPlumber service.
 
-The plugin needs root privileges for device access and temporary service management. It does not replace the kernel, install permanent udev rules or modify games’ launch options automatically. Explicit sleep/wake reconnection is not implemented.
+The plugin needs root privileges for device access and temporary service management. It does not replace the kernel, install permanent udev rules or modify games’ launch options automatically.
 
-The standalone bridge and plugin startup/controls have user-reported success. In-game behavior of the latest plugin, Library/QAM mapping, clipboard behavior and sleep recovery are not independently verified. See [details and recovery instructions](docs/DETAILS.md).
+See [details and recovery instructions](docs/DETAILS.md) to revert the changes made by the plugin.
 
 ## Per-game trigger profiles
 
@@ -112,7 +129,7 @@ Turning vibration off keeps the bridge connected. **Stop controller bridge** dis
 
 In my experience, once the bridge is enabled, there is no need to manually disable and re-enable it after sleep/wake or even a system restart. The enabled setting is saved, and the plugin starts the bridge again when Decky loads after a restart.
 
-This is my experience on the tested setup, not a guarantee for every system. The bridge process may not survive a reboot, and explicit sleep/wake reconnection logic is not implemented.
+This is my experience on the tested setup, not a guarantee for every system. The bridge process may not survive a reboot.
 
 ## Build
 
