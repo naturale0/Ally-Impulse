@@ -2,12 +2,14 @@ import { ButtonItem, PanelSection, PanelSectionRow, SliderField, ToggleField, st
 import { callable, definePlugin } from '@decky/api';
 import { useEffect, useRef, useState } from 'react';
 import { FaGamepad } from 'react-icons/fa';
+import { startGameTracking } from './game-tracking';
 
-type Status = { enabled: boolean; strength: number; running: boolean; ready: boolean; trigger_requests: number; error: string };
+type Status = { active_game: {id: string; name: string} | null; custom_profile: boolean; default_strength: number; enabled: boolean; strength: number; running: boolean; ready: boolean; trigger_requests: number; error: string };
 const getStatus = callable<[], Status>('get_status');
-const setOptions = callable<[enabled: boolean, strength: number, preview: boolean], Status>('set_options');
+const setOptions = callable<[enabled: boolean, strength: number, preview: boolean, expectedAppId: string | null], Status>('set_options');
 const getLaunchOption = callable<[], string>('get_launch_option');
 const stopBridge = callable<[], Status>('stop_bridge');
+const resetGameProfile = callable<[appId: string], Status>('reset_game_profile');
 
 function Content() {
   const [status, setStatus] = useState<Status>();
@@ -34,14 +36,20 @@ function Content() {
     const interval = setInterval(refresh, 2000);
     return () => { active.current = false; clearInterval(interval); if (timer.current) clearTimeout(timer.current); };
   }, []);
-  const update = async (enabled: boolean, value: number, preview = false) => {
+  const update = async (enabled: boolean, value: number, preview = false, expectedAppId: string | null = latest.current?.active_game?.id ?? null) => {
     if (timer.current) clearTimeout(timer.current);
     revision.current++; changing.current = true; setBusy(true); setError('');
-    try { const result = await setOptions(enabled, value, preview); if (active.current) accept(result); }
+    try { const result = await setOptions(enabled, value, preview, expectedAppId); if (active.current) accept(result); }
     catch (e) { if (active.current) setError(String(e)); }
     finally { changing.current = false; if (active.current) setBusy(false); }
   };
   return <PanelSection title="Impulse triggers">
+    <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
+      <strong>{status?.active_game?.name ?? 'Default profile'}</strong>
+      <div>{status?.active_game
+        ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
+        : 'Used when no game is running and by games without saved settings.'}</div>
+    </div></PanelSectionRow>
     <PanelSectionRow><ToggleField label="Enable trigger vibration" checked={status?.enabled ?? false}
       disabled={busy || !status} description="Use independent feedback requested by the game."
       onChange={(value) => void update(value, strength)} /></PanelSectionRow>
@@ -51,8 +59,19 @@ function Content() {
       onChange={(value) => {
         setStrength(value); revision.current++; changing.current = true;
         if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => void update(latest.current?.enabled ?? false, value, true), 250);
+        const context = latest.current?.active_game?.id ?? null;
+        const enabled = latest.current?.enabled ?? false;
+        timer.current = setTimeout(() => void update(enabled, value, true, context), 250);
       }} /></PanelSectionRow>
+    {status?.active_game && status.custom_profile && <PanelSectionRow><ButtonItem layout="below" disabled={busy}
+      description="Remove this game’s saved settings and use your default profile."
+      onClick={async () => {
+        const id = latest.current?.active_game?.id; if (!id) return;
+        if (timer.current) clearTimeout(timer.current);
+        revision.current++; changing.current = true; setBusy(true); setError('');
+        try { accept(await resetGameProfile(id)); } catch(e) { setError(String(e)); }
+        finally { changing.current = false; setBusy(false); }
+      }}>Use default for this game</ButtonItem></PanelSectionRow>}
     <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
       {status?.ready ? 'Controller connected' : status?.running ? 'Starting controller…' : 'Controller bridge stopped'}
       {status?.ready && <div>{status.trigger_requests > 0 ? 'Trigger feedback received this session' : 'Waiting for game trigger feedback'}</div>}
@@ -96,10 +115,13 @@ function Content() {
       }}>Stop controller bridge</ButtonItem></PanelSectionRow>}
   </PanelSection>;
 }
-export default definePlugin(() => ({
+export default definePlugin(() => {
+  const stopTracking = startGameTracking();
+  return ({
   name: 'Ally Impulse',
   titleView: <div className={staticClasses.Title}>Ally Impulse</div>,
   content: <Content />,
   icon: <FaGamepad />,
-  onDismount() {},
-}));
+  onDismount() { stopTracking(); },
+});
+});

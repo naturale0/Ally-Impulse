@@ -84,10 +84,142 @@ function FaGamepad (props) {
   return GenIcon({"attr":{"viewBox":"0 0 640 512"},"child":[{"tag":"path","attr":{"d":"M480.07 96H160a160 160 0 1 0 114.24 272h91.52A160 160 0 1 0 480.07 96zM248 268a12 12 0 0 1-12 12h-52v52a12 12 0 0 1-12 12h-24a12 12 0 0 1-12-12v-52H84a12 12 0 0 1-12-12v-24a12 12 0 0 1 12-12h52v-52a12 12 0 0 1 12-12h24a12 12 0 0 1 12 12v52h52a12 12 0 0 1 12 12zm216 76a40 40 0 1 1 40-40 40 40 0 0 1-40 40zm64-96a40 40 0 1 1 40-40 40 40 0 0 1-40 40z"},"child":[]}]})(props);
 }
 
+const setActiveGame = callable('set_active_game');
+const idOf = (value) => {
+    if ((typeof value !== 'number' && typeof value !== 'string') || value === '')
+        return null;
+    let n = Number(value);
+    if (Number.isInteger(n) && n < 0 && n >= -2147483648)
+        n = n >>> 0;
+    return Number.isInteger(n) && n > 0 && n <= 0xffffffff ? String(n) : null;
+};
+// Installed once per plugin load, outside the panel's React lifecycle.
+function startGameTracking() {
+    const instances = new Map();
+    const stopped = new Map();
+    let disposed = false;
+    let emptyReads = 0;
+    let desired = null;
+    let sent;
+    let busy = false;
+    let dirty = false;
+    let subscription;
+    const globals = () => window;
+    const game = (id, name) => {
+        if (!name) {
+            try {
+                name = globals().appStore?.GetAppOverviewByAppID?.(Number(id))?.display_name;
+            }
+            catch { /* Use ID. */ }
+        }
+        return { id, name: name || `Game ${id}` };
+    };
+    const drain = async () => {
+        if (busy || disposed)
+            return;
+        busy = true;
+        try {
+            while (dirty && !disposed) {
+                dirty = false;
+                const target = desired;
+                const key = JSON.stringify(target);
+                if (sent === key)
+                    continue;
+                try {
+                    await setActiveGame(target?.id ?? null, target?.name ?? '');
+                    sent = key;
+                }
+                catch (e) {
+                    console.warn('Ally Impulse game profile selection failed', e);
+                }
+            }
+        }
+        finally {
+            busy = false;
+        }
+    };
+    const publish = (target) => { desired = target; dirty = true; void drain(); };
+    const reconcile = (explicitStop = false) => {
+        if (disposed)
+            return;
+        let available = false;
+        try {
+            const store = globals().SteamUIStore;
+            if (store) {
+                const apps = store.RunningApps;
+                available = Array.isArray(apps);
+                const candidates = [store.MainRunningApp, ...(Array.isArray(apps) ? apps : [])];
+                const mainId = idOf(store.MainRunningAppID);
+                if (mainId)
+                    candidates.unshift({ appid: mainId });
+                for (const app of candidates) {
+                    const id = idOf(app?.appid);
+                    if (!id || Date.now() - (stopped.get(id) ?? 0) < 3000)
+                        continue;
+                    emptyReads = 0;
+                    publish(game(id, app?.display_name));
+                    return;
+                }
+            }
+        }
+        catch { /* Lifetime notifications remain the fallback. */ }
+        const ids = [...instances.keys()];
+        if (ids.length) {
+            emptyReads = 0;
+            publish(game(ids[ids.length - 1]));
+            return;
+        }
+        // Briefly empty running-app lists can occur during SteamUI transitions.
+        if (explicitStop || (available && ++emptyReads >= 3))
+            publish(null);
+    };
+    try {
+        subscription = SteamClient.GameSessions.RegisterForAppLifetimeNotifications(event => {
+            const id = idOf(event.unAppID);
+            if (!id)
+                return;
+            if (event.bRunning) {
+                stopped.delete(id);
+                const set = instances.get(id) ?? new Set();
+                set.add(event.nInstanceID);
+                instances.delete(id);
+                instances.set(id, set);
+                emptyReads = 0;
+                publish(game(id));
+            }
+            else {
+                const set = instances.get(id);
+                if (set) {
+                    set.delete(event.nInstanceID);
+                    if (!set.size)
+                        instances.delete(id);
+                }
+                if (!instances.has(id))
+                    stopped.set(id, Date.now());
+                reconcile(desired?.id === id && !instances.has(id));
+            }
+        });
+    }
+    catch (e) {
+        console.warn('Ally Impulse game events unavailable; using running-app polling', e);
+    }
+    reconcile();
+    const interval = setInterval(() => reconcile(), 1000);
+    return () => {
+        disposed = true;
+        clearInterval(interval);
+        try {
+            subscription?.unregister();
+        }
+        catch { /* Steam may be shutting down. */ }
+    };
+}
+
 const getStatus = callable('get_status');
 const setOptions = callable('set_options');
 const getLaunchOption = callable('get_launch_option');
 const stopBridge = callable('stop_bridge');
+const resetGameProfile = callable('reset_game_profile');
 function Content() {
     const [status, setStatus] = SP_REACT.useState();
     const [strength, setStrength] = SP_REACT.useState(100);
@@ -123,7 +255,7 @@ function Content() {
         return () => { active.current = false; clearInterval(interval); if (timer.current)
             clearTimeout(timer.current); };
     }, []);
-    const update = async (enabled, value, preview = false) => {
+    const update = async (enabled, value, preview = false, expectedAppId = latest.current?.active_game?.id ?? null) => {
         if (timer.current)
             clearTimeout(timer.current);
         revision.current++;
@@ -131,7 +263,7 @@ function Content() {
         setBusy(true);
         setError('');
         try {
-            const result = await setOptions(enabled, value, preview);
+            const result = await setOptions(enabled, value, preview, expectedAppId);
             if (active.current)
                 accept(result);
         }
@@ -145,14 +277,38 @@ function Content() {
                 setBusy(false);
         }
     };
-    return SP_JSX.jsxs(DFL.PanelSection, { title: "Impulse triggers", children: [SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ToggleField, { label: "Enable trigger vibration", checked: status?.enabled ?? false, disabled: busy || !status, description: "Use independent feedback requested by the game.", onChange: (value) => void update(value, strength) }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.SliderField, { label: "Trigger strength", value: strength, min: 0, max: 100, step: 5, showValue: true, valueSuffix: "%", disabled: busy || !status, description: "A brief preview plays at this strength when enabled. 0% is silent.", onChange: (value) => {
+    return SP_JSX.jsxs(DFL.PanelSection, { title: "Impulse triggers", children: [SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '13px', lineHeight: 1.5 }, children: [SP_JSX.jsx("strong", { children: status?.active_game?.name ?? 'Default profile' }), SP_JSX.jsx("div", { children: status?.active_game
+                                ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
+                                : 'Used when no game is running and by games without saved settings.' })] }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ToggleField, { label: "Enable trigger vibration", checked: status?.enabled ?? false, disabled: busy || !status, description: "Use independent feedback requested by the game.", onChange: (value) => void update(value, strength) }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.SliderField, { label: "Trigger strength", value: strength, min: 0, max: 100, step: 5, showValue: true, valueSuffix: "%", disabled: busy || !status, description: "A brief preview plays at this strength when enabled. 0% is silent.", onChange: (value) => {
                         setStrength(value);
                         revision.current++;
                         changing.current = true;
                         if (timer.current)
                             clearTimeout(timer.current);
-                        timer.current = setTimeout(() => void update(latest.current?.enabled ?? false, value, true), 250);
-                    } }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '13px', lineHeight: 1.5 }, children: [status?.ready ? 'Controller connected' : status?.running ? 'Starting controller…' : 'Controller bridge stopped', status?.ready && SP_JSX.jsx("div", { children: status.trigger_requests > 0 ? 'Trigger feedback received this session' : 'Waiting for game trigger feedback' }), SP_JSX.jsx("div", { children: "M1 \u2192 R3 \u00B7 M2 \u2192 L3" }), SP_JSX.jsx("div", { children: "Library \u2192 Quick Access Menu" }), SP_JSX.jsx("div", { children: "Disable Steam Input for the game. Some games also need the included launch option." }), (error || status?.error) && SP_JSX.jsx("div", { style: { color: '#ffb4ab', marginTop: '8px' }, children: error || status?.error })] }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ButtonItem, { layout: "below", disabled: !launchOption, description: "Paste into your game\u2019s Properties \u2192 General \u2192 Launch Options in Steam. Disable Steam Input under Properties \u2192 Controller.", onClick: async () => {
+                        const context = latest.current?.active_game?.id ?? null;
+                        const enabled = latest.current?.enabled ?? false;
+                        timer.current = setTimeout(() => void update(enabled, value, true, context), 250);
+                    } }) }), status?.active_game && status.custom_profile && SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ButtonItem, { layout: "below", disabled: busy, description: "Remove this game\u2019s saved settings and use your default profile.", onClick: async () => {
+                        const id = latest.current?.active_game?.id;
+                        if (!id)
+                            return;
+                        if (timer.current)
+                            clearTimeout(timer.current);
+                        revision.current++;
+                        changing.current = true;
+                        setBusy(true);
+                        setError('');
+                        try {
+                            accept(await resetGameProfile(id));
+                        }
+                        catch (e) {
+                            setError(String(e));
+                        }
+                        finally {
+                            changing.current = false;
+                            setBusy(false);
+                        }
+                    }, children: "Use default for this game" }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '13px', lineHeight: 1.5 }, children: [status?.ready ? 'Controller connected' : status?.running ? 'Starting controller…' : 'Controller bridge stopped', status?.ready && SP_JSX.jsx("div", { children: status.trigger_requests > 0 ? 'Trigger feedback received this session' : 'Waiting for game trigger feedback' }), SP_JSX.jsx("div", { children: "M1 \u2192 R3 \u00B7 M2 \u2192 L3" }), SP_JSX.jsx("div", { children: "Library \u2192 Quick Access Menu" }), SP_JSX.jsx("div", { children: "Disable Steam Input for the game. Some games also need the included launch option." }), (error || status?.error) && SP_JSX.jsx("div", { style: { color: '#ffb4ab', marginTop: '8px' }, children: error || status?.error })] }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ButtonItem, { layout: "below", disabled: !launchOption, description: "Paste into your game\u2019s Properties \u2192 General \u2192 Launch Options in Steam. Disable Steam Input under Properties \u2192 Controller.", onClick: async () => {
                         setCopyNote('');
                         try {
                             let copied = false;
@@ -203,13 +359,16 @@ function Content() {
                         }
                     }, children: "Stop controller bridge" }) })] });
 }
-var index = definePlugin(() => ({
-    name: 'Ally Impulse',
-    titleView: SP_JSX.jsx("div", { className: DFL.staticClasses.Title, children: "Ally Impulse" }),
-    content: SP_JSX.jsx(Content, {}),
-    icon: SP_JSX.jsx(FaGamepad, {}),
-    onDismount() { },
-}));
+var index = definePlugin(() => {
+    const stopTracking = startGameTracking();
+    return ({
+        name: 'Ally Impulse',
+        titleView: SP_JSX.jsx("div", { className: DFL.staticClasses.Title, children: "Ally Impulse" }),
+        content: SP_JSX.jsx(Content, {}),
+        icon: SP_JSX.jsx(FaGamepad, {}),
+        onDismount() { stopTracking(); },
+    });
+});
 
 export { index as default };
 //# sourceMappingURL=index.js.map

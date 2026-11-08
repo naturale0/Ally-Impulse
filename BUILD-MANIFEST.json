@@ -1,18 +1,19 @@
 {
-  "version": "0.1.9",
+  "version": "0.2.0",
   "decky_template_revision": "90d0780e882a17f5714fc6de044c645f22608290",
   "base_bridge": "Corrected ally-controller-gamefeedback, with direct kernel configuration and HID_UNIQ discovery",
   "build": "Rollup frontend build completed; Python source compilation completed. No new hardware, Decky UI, or game execution performed.",
   "source_sha256": {
-    "main.py": "1f44ba98d24878c9b0e1ed8c8bdbb087dd4a8c40600dc86447f6394d6ae5a3ff",
-    "src/index.tsx": "c91e64bfc3ceb4b2cbccbf023861cb158e3e6422325ef7b31284b4eb2e6fe584",
+    "main.py": "d74b9923141ba1932b9c635ed496bd2079839aa53e2d03e81dac1ad726718c45",
+    "src/index.tsx": "400ae837a960e37ffd8480d03cc693215e800032265bec664326376e886046ae",
     "bridge/bridge.py": "cd5dbab9adbff9ccfb02f47ba48f1204225cf7d62a91d6fe9b72c52e567c461b",
     "bridge/allyctl.py": "079f9260a69c4ab4538072fa105d207efbc4ae173e7599eac111183a39da4467",
     "bridge/xbox-series.desc": "77217d17ac62542112c88f81873637569273515f092ad86299be354bc8f14fcc",
     "game-env.sh": "926a95cc7fbb9df2716c0a43c264fab32e69df5a83b4b3f1e82c64e4fbe475a6",
     "pnpm-lock.yaml": "3461c00a028ae17bbf8dd01e86dd961961849efeb31c14856ec523a4dc844edf",
     "plugin.json": "3eb94bcb11dfb1864f5513edcccdcbf8dc94ed3647c6b2cf407f56658b10bcf1",
-    "dist/index.js": "6e439e3021dd300b4eb4ef7b7db5a54d8522e19337a491e257daac7ffba151c4"
+    "dist/index.js": "70644ffd28fddad571c84ca607dbc94e96cdd8ce8036b237e190c44815d61539",
+    "src/game-tracking.ts": "9f8765b8dac811998e5c9de05017bab3d86cbd2a1109c934c39deb1bff33c989"
   },
   "privilege_fix": "flags root matches Decky sandboxed_plugin.py; no hardware execution performed",
   "busy_diagnostics": "Separate evdev exclusive grab and physical feature-report busy errors; no hardware execution performed",
@@ -22,5 +23,6 @@
   "new_features": "150 ms slider-strength trigger preview and copy launch option button. Frontend build and Python compilation completed; no new hardware/UI execution.",
   "log_fix": "Accept root or Decky-user-owned regular single-link logs in managed mode; reject symlinks, chmod0600. No hardware execution.",
   "mapping_update": "M1=R3, M2=L3. Save/enable/restore kernel qam_mode for timed Xbox+A. Frontend build and Python compilation completed; physical Library event and QAM behavior unverified.",
-  "kernel_compatibility": "Remove exact release gate; require hardware identity and UHID/evdev/sysfs capabilities. Python compilation completed; no other-kernel hardware tests performed."
+  "kernel_compatibility": "Remove exact release gate; require hardware identity and UHID/evdev/sysfs capabilities. Python compilation completed; no other-kernel hardware tests performed.",
+  "per_game_profiles": "Steam lifecycle listener and running-app reconciliation; AppID-keyed enable/strength profiles, migration backup, context-guarded edits, default/reset behavior. Frontend build and Python compilation completed. No live game, Decky lifecycle, migration or hardware tests performed."
 }

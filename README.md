@@ -5,6 +5,7 @@ A Decky Loader plugin for genuine, game-driven impulse-trigger vibration on the 
 ## Features
 
 - Enable/disable trigger vibration and adjust its strength from 0–100%.
+- Automatically save and load each game’s enable/strength settings, with a default for other games.
 - Brief trigger preview when changing strength while enabled.
 - M1 → right-stick click (R3); M2 → left-stick click (L3).
 - Library → Steam Quick Access Menu through the kernel’s Xbox+A shortcut.
@@ -91,6 +92,21 @@ The plugin creates a virtual Xbox Series Bluetooth HID controller using Linux UH
 The plugin needs root privileges for device access and temporary service management. It does not replace the kernel, install permanent udev rules or modify games’ launch options automatically. Explicit sleep/wake reconnection is not implemented.
 
 The standalone bridge and plugin startup/controls have user-reported success. In-game behavior of the latest plugin, Library/QAM mapping, clipboard behavior and sleep recovery are not independently verified. See [details and recovery instructions](docs/DETAILS.md).
+
+## Per-game trigger profiles
+
+Launch a game through Steam and open **Decky → Ally Impulse**. The panel shows the running game’s name. Change the strength or enable toggle; those settings are saved automatically for that game and loaded on future launches, even while the plugin panel is closed.
+
+- With no game running, the controls edit your **Default profile**.
+- Games without saved settings inherit that default until you customize them.
+- **Use default for this game** removes its saved override.
+- Exiting a game restores the default. Profile switches keep the virtual controller connected and do not play preview pings.
+
+Existing settings become your default on upgrade; a copy is kept as `settings-before-game-profiles.json` in the plugin’s Decky settings directory. Profiles persist across Decky restarts and reboots, keyed by Steam AppID. Steam-added non-Steam shortcuts are supported when Steam reports their lifecycle; recreating a shortcut can change its ID. No additional launch option is required for profile selection, though the existing controller wrapper may still be needed for game compatibility.
+
+Automatic selection uses Steam game-lifetime notifications and its running-app state. If multiple apps are running, the Steam-reported main app is preferred; the last reported running app is the fallback. This feature requires confirmation on your Steam/Decky build. If the panel shows **Default profile** while your game is running, automatic detection has not selected it yet—do not assume edits are being saved for that game.
+
+Turning vibration off keeps the bridge connected. **Stop controller bridge** disables the current profile and the default, then restores the physical controller; other saved game profiles remain intact and can start it on a later game launch.
 
 ## Sleep/wake and system restarts
 

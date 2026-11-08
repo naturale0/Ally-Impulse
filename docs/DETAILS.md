@@ -109,3 +109,11 @@ M1 (F15) now maps to right-stick click/R3; M2 (F14) maps to left-stick click/L3.
 ## Kernel compatibility (0.1.9)
 
 The exact kernel release restriction is removed. Startup still requires Xbox Ally X board RC73XA and controller USB 0b05:1b4c. Before changing controller settings, the bridge checks the physical evdev identity, required stick/trigger/D-pad axes and ranges, required gamepad buttons, UHID availability, and the Ally driver configuration/remapping attributes. Existing opened-hidraw identity checks and transfer errors remain enforced. Optional qam_mode is used only when available. A different kernel produces a baseline warning rather than a rejection. These checks allow compatible Valve or other kernels with the required driver interfaces; they do not prove firmware motor-report compatibility or guarantee support for stock kernels lacking those interfaces. Only the README’s FH5/SteamOS/kernel baseline is user-tested.
+
+## Per-game profiles (0.2.0)
+
+The backend migrates the previous flat `settings.json` into version 2 with `defaults` and AppID-keyed `games`. Top-level `enabled` and `strength` remain the effective live controls read by the existing bridge. Profile changes are atomic file replacements; no bridge restart or device recreation is needed. Old settings are backed up before migration. On backend startup the default is selected first, then the frontend reconciles the currently running Steam game. A brief default-profile interval is possible during a Decky reload.
+
+A plugin-lifetime frontend listener uses `SteamClient.GameSessions.RegisterForAppLifetimeNotifications`, with one-second `SteamUIStore` reconciliation for already-running games and resume/reload recovery. It is installed outside React panel mount/unmount. App IDs and option values are validated by the backend; edits carry the expected AppID so a delayed slider save cannot affect a different game. Unknown/unsupported Steam UI detection may leave the default active. Automatic profile application does not generate a slider preview. Both game enable state and strength are remembered.
+
+Frontend build and Python compilation are performed for distribution. Live Steam lifecycle events, multi-app selection, profile migration and hardware behavior of this release have not yet been exercised on the user’s device.
