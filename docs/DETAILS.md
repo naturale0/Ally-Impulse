@@ -1,113 +1,196 @@
-# Ally Impulse — Decky plugin
+# Ally Impulse: usage, troubleshooting and recovery
 
-Xbox Ally X independent, game-driven LT/RT vibration with a Decky toggle and 0–100% strength slider. Includes M1→R3 and M2→L3.
+This guide explains how Ally Impulse manages the controller and how to restore the changes it makes. For installation, supported hardware and reported working configurations, start with the [README](../README.md#install).
 
-## Install
+## What the bridge does
 
-1. Exit games and stop the old terminal bridge with Ctrl+C. Its restoration must finish before enabling the plugin.
-2. Extract `ally-impulse-decky.zip`. It contains an `ally-impulse` folder with the compiled frontend, Python backend and bridge. Copy that folder into your Decky plugin directory, normally `/home/deck/homebrew/plugins/`. Example from the directory containing the downloaded ZIP:
+Ally Impulse exposes a virtual Xbox Series controller and forwards the Xbox Ally X’s physical controls to it. Games send vibration requests to that virtual controller; the bridge forwards four separate motor values to the Ally:
 
-   ```sh
-   unzip ally-impulse-decky.zip
-   sudo cp -a ally-impulse /home/deck/homebrew/plugins/
-   sudo chown -R root:root /home/deck/homebrew/plugins/ally-impulse
-   sudo systemctl restart plugin_loader.service
-   ```
+- Left trigger (LT).
+- Right trigger (RT).
+- Left grip.
+- Right grip.
 
-   If the `ally-impulse` destination already exists, stop its bridge and move the old folder aside first instead of copying over it. Use your actual Decky home if different.
-3. Open Decky → **Ally Impulse**. Enable **trigger vibration** before starting a game. The plugin discovers the physical pad automatically, loads UHID if needed and waits for the virtual controller to be ready. Decky remains running. Only an active InputPlumber service is paused if one is installed.
-4. Keep an external keyboard or touch input available for this first plugin session. The built-in rear-key keyboard interface is grabbed, the Library/QAM shortcut uses the kernel driver’s Xbox+A sequence when qam_mode is available, and keys sharing the grabbed interface may be suppressed.
+The strength slider scales LT and RT independently. It does not scale grip amplitudes or generate game feedback from trigger position, throttle, braking or ordinary rumble. A game must actually submit independent trigger requests through a compatible input path.
 
-## Across games
+A brief slider preview is an intentional exception: it sends a test pulse so the selected strength can be felt without launching a game. Preview pulses are labeled separately in the log.
 
-For each game, disable Steam Input in Steam → Properties → Controller. Keep the virtual controller running before launching the game. Reuse this same Launch Option for compatible Proton games, adjusting the installation path if needed:
+## Starting and using the controller
+
+1. Exit any older standalone bridge before enabling the plugin.
+2. Open **Decky → Ally Impulse** and enable trigger vibration. Wait for **Controller connected** before launching a game.
+3. Disable Steam Input for the game.
+4. Use **Copy launch option** and paste the command into **Steam → game Properties → General → Launch Options**. Preserve existing launch options before editing them.
+
+The standard command is:
 
 ```text
 /home/deck/homebrew/plugins/ally-impulse/game-env.sh %command%
 ```
 
-The wrapper enables SDL Xbox HIDAPI and selects the SDL controller route with the source-verified GE-Proton11-5 `PROTON_USE_SDL=1` flag. It does not contain an FH5-specific switch. A Proton build that does not implement that flag may need different configuration. Native SDL games can use the wrapper too; Proton variables have no effect on a native executable. Other native input backends are not guaranteed to deliver four channels.
+The copy button uses the actual installed path if it differs. The wrapper selects SDL’s Xbox HIDAPI input path and sets the relevant Proton options. It does not start the bridge or change a game’s files. Some games require additional compatibility work; see the [Motorsport guide](FORZA-MOTORSPORT.md) for its separate controller-ID patch and FM Tools/Xodus prerequisites.
 
-This plugin does not modify other games' launch options or inject DLLs. There is no reliable setting in Decky that forces every game engine to use a four-channel API. The virtual pad is available system-wide while the bridge is running; the wrapper is a reusable per-game runtime selection. It allows only virtual 045e:0b13 controllers in SDL, so other controllers are excluded in games launched through it. Unplug other actual Series Bluetooth controllers with that same VID/PID during initial validation.
+The wrapper allows only controllers with the virtual Xbox Series identity `045e:0b13` in SDL. Other controllers are excluded from that game’s SDL input path. A physical controller with the same identity may still appear, so disconnect additional controllers when diagnosing duplicate input.
 
-FH5 on GE-Proton11-5 is the starting configuration from the working-bridge discussion. Other titles/builds should be confirmed individually by physical feedback and the plugin's **Trigger feedback received this session** indicator. That indicator counts incoming nonzero trigger requests, including while trigger output is disabled; it does not identify the sending process or prove physical vibration.
+## Controls and button mappings
 
-## Controls
+| Control | Behavior |
+| --- | --- |
+| **Enable trigger vibration** | Starts the bridge if needed. Turning it off zeros trigger output while keeping the virtual controller, normal input and grip rumble connected. |
+| **Trigger strength** | Scales trigger requests from 0–100%. At 100%, the game’s requested intensity passes through; 0% is silent. |
+| **Use default for this game** | Removes the running game’s saved override and applies the default profile. |
+| **Copy launch option** | Copies the reusable wrapper command. If clipboard access fails, the command is displayed for manual copying. |
+| **Stop controller bridge** | Disconnects the virtual controller, releases physical input ownership and restores saved controller/service settings. Exit the game before using it. |
 
-- **Enable trigger vibration:** starts the bridge if necessary. Turning it off immediately zeros LT/RT output and keeps normal controls and grip rumble connected. It does not restart or replace the virtual controller mid-game.
-- **Trigger strength:** scales each game's requested LT and RT magnitude independently from 0% to 100%. 100% passes the requested intensity through; it does not amplify or synthesize feedback. The grip channels are not scaled. Changes are applied to subsequent game output reports. On a change the bridge first zeros trigger output, so enabling/increasing strength cannot replay an old effect; the next genuine game report supplies the new intensity.
-- **Stop controller bridge:** use after exiting the game to disconnect the virtual pad, release grabs and restore the saved physical mappings/mode and any paused InputPlumber service. This may cause games to lose their controller if used during gameplay.
+Button mappings while the bridge runs:
 
-Settings persist. If enabled when Decky loads, the bridge starts automatically. If disabled, no bridge is started on a fresh Decky load; after toggling off during a session it remains connected until stopped or Decky unloads. A Decky reload/uninstall stops the bridge and restores the controller. Reloading Decky during a game can disconnect the pad. A separate watchdog zeros all motors if the bridge is killed. The bridge also exits when its plugin backend parent disappears.
+- **M1 → right-stick click (R3).**
+- **M2 → left-stick click (L3).**
+- **Library → Quick Access Menu**, through the kernel driver’s timed Xbox+A shortcut when its `qam_mode` interface is available.
 
-## Recovery / uninstall
+Physical stick clicks continue working alongside the rear-button aliases. Holding both an alias and its physical stick click does not release the virtual click until both are released.
 
-Normally use **Stop controller bridge** first, then remove the plugin through Decky or delete its folder and restart Decky. Decky plugin settings/logs may remain for troubleshooting; remove those only if wanted.
+The bridge takes exclusive access to the gamepad and rear-key keyboard interface. Other keys sharing that keyboard interface may be suppressed while it runs. Keep touch input or an external keyboard available during initial setup and troubleshooting.
 
-After an interrupted session, the plugin attempts recovery from `/run/ally-gamefeedback-state.json` before starting again. It refuses to take over a live bridge. To recover manually after stopping the recorded process:
+### Strength preview
+
+After slider movement pauses for approximately 250 ms, both triggers receive a 150 ms preview at the selected percentage, provided trigger vibration is enabled. No preview plays when disabled or at 0% strength.
+
+Automatic profile changes do not play previews. During a preview, incoming game reports retain their grip amplitudes while trigger output uses the preview strength. When it ends, recent game feedback resumes; otherwise trigger output is zeroed rather than replaying an old effect.
+
+## Per-game profiles
+
+The panel displays the running game’s name. Adjusting its toggle or strength saves both values for that Steam AppID. Future launches load those values automatically, even when the Decky panel is closed.
+
+- **No game running:** edits change the default profile.
+- **Game without saved settings:** the default applies until a setting is customized.
+- **Game with saved settings:** its profile applies on launch.
+- **Game exits:** the default profile applies again.
+
+Steam-added non-Steam shortcuts can have profiles when Steam reports their lifecycle. Recreating a shortcut may change its AppID and therefore require a new profile. When multiple apps run, the Steam-reported main app is preferred; the last reported running app is the fallback.
+
+If the panel still shows **Default profile** while a game runs, game detection has not selected it. Changes made in that state edit the default, not a game-specific profile. The backend rejects a delayed edit if the selected game changes before the edit is saved.
+
+**Stop controller bridge** disables the current profile and the default before stopping. Other saved game profiles remain intact and can start the bridge on a later launch.
+
+### Settings storage and upgrades
+
+The usual settings location is:
+
+```text
+/home/deck/homebrew/settings/ally-impulse/settings.json
+```
+
+The current format stores a default profile and game profiles keyed by AppID. The flat top-level enable/strength fields represent the active profile read by the bridge. Avoid editing this file while Decky is running, since the plugin may overwrite manual changes.
+
+Older settings are migrated into the default profile. A pre-migration copy is retained as `settings-before-game-profiles.json` in the same directory. Settings persist across Decky restarts and system reboots.
+
+## Temporary system changes
+
+While active, the bridge:
+
+1. Saves the physical controller’s mode and game-mode rear-button mappings.
+2. Selects game mode and maps the rear keys for the virtual stick-click aliases.
+3. Saves and enables the kernel’s QAM mode when that interface exists.
+4. Temporarily stops InputPlumber if present and blocks service reactivation with a runtime mask, unless it was already masked.
+5. Takes exclusive physical input access and creates the virtual controller through Linux UHID.
+6. Grants the Steam user access to the newly created virtual HID node.
+
+Decky remains running. On a normal stop, the bridge releases input access, removes the virtual controller, sends an all-motor stop report, restores the saved mappings/modes, and removes any InputPlumber runtime mask that it created. InputPlumber is restarted only if it was active in the initial snapshot.
+
+The kernel’s `apply_all` operation also reapplies its cached button, deadzone and response-curve settings. The plugin does not replace kernel modules, install a permanent udev rule, create a separate boot service or automatically rewrite game launch options.
+
+## Sleep, wake and restarts
+
+Reported testing has not required manually toggling the bridge after sleep/wake or a system restart. Saved settings allow the plugin to start the bridge again when Decky loads; game detection then selects the appropriate profile.
+
+Restarting Decky while a game runs can disconnect and recreate the virtual controller. Some games may need to be relaunched afterward. On backend startup, the default profile is selected before the running game is detected, so a brief default-profile interval is possible.
+
+## Restoring the original controller
+
+### Normal stop
+
+1. Exit the game.
+2. Open Ally Impulse and select **Stop controller bridge**.
+3. Wait for **Controller bridge stopped**.
+
+This restores the saved physical controller configuration and any InputPlumber service state managed by the bridge. Turning only the vibration toggle off does **not** perform this restoration, because the virtual controller stays connected.
+
+### Recovery after an interruption
+
+The bridge records restoration data in:
+
+```text
+/run/ally-gamefeedback-state.json
+```
+
+Before starting a new session, the plugin attempts to restore an interrupted session from that journal. It refuses to take over a bridge whose recorded PID is still alive.
+
+If automatic recovery fails, exit games and stop any still-running bridge cleanly. Then run:
 
 ```sh
 sudo python3 /home/deck/homebrew/plugins/ally-impulse/bridge/bridge.py --restore
 ```
 
-A failure to restore leaves the journal for inspection. No boot service or permanent udev rule is installed. UHID may remain loaded until reboot; do not unload it while another application needs it.
+Adjust the path if the plugin is installed elsewhere. Do not delete the journal to bypass an error: it contains the saved mappings and service state needed for restoration. A failed restore retains it for another attempt. If the controller’s old configuration interface has disappeared, restoration may require further diagnosis.
 
-## Diagnostics and development
+A watchdog attempts an all-motor stop if the bridge process dies. It cannot recover a disconnected USB device, kernel failure or power loss. Runtime masks disappear on reboot; UHID may remain loaded until reboot and should not be unloaded while another application needs it.
 
-Decky logs are normally in `/home/deck/homebrew/logs/ally-impulse/` (use the actual `DECKY_PLUGIN_LOG_DIR` for your installation):
+### Uninstall
 
-- `bridge.log`: startup, errors and restoration output.
-- `reports.jsonl`: incoming Xbox report and outgoing Ally report; bounded to approximately 4 MiB.
+Stop the bridge and complete any necessary recovery **before** removing the plugin files. Then uninstall through Decky, or remove the plugin directory and restart Decky. Remove Ally Impulse’s wrapper from game launch options while preserving other required options.
 
-The UI displays startup errors instead of silently enabling a failed bridge. Strength and enable values are validated by the backend and bridge. Only fixed executable/argument lists are used; no command text is accepted from the UI.
+Decky settings and logs may remain after uninstall. They can be kept for reinstallation or removed separately when no longer needed. The Motorsport DLL workaround is independent of the plugin; follow its [undo instructions](FORZA-MOTORSPORT.md#undo--updates) if it should also be reverted.
 
-Source lives in `main.py`, `src/index.tsx`, `bridge/`. Build using the pinned `package.json` / `pnpm-lock.yaml`:
+## Troubleshooting
+
+| Symptom | Next step |
+| --- | --- |
+| **Device or resource busy** | Check `bridge.log` for the named device and processes with it open. Stop an older bridge or conflicting mapper cleanly. An open file descriptor alone does not prove exclusive ownership; do not kill every listed process. |
+| **Missing kernel/controller interface** | Check the reported missing axis, button or sysfs attribute. A different kernel version is allowed only when the required interfaces are present. See the README’s [tested configurations](../README.md#tested-configuration). |
+| **No controller in a game** | Enable the bridge before launch, check Steam Input and launch options, and investigate game-specific input issues. For Motorsport, check its exact-build controller-ID patch. |
+| **Buttons and grip rumble work, but trigger feedback is unclear** | Inspect incoming LT/RT values in `reports.jsonl`. Ordinary rumble does not establish impulse-trigger support. |
+| **Default profile remains selected during a game** | Check whether Steam detects the running game. Reopen the panel after launch; Steam/Decky API differences can prevent automatic profile selection. |
+| **Clipboard copy fails** | Copy the command displayed in the panel manually. |
+| **Recovery refuses because the PID is alive** | Identify the recorded process and stop the actual bridge cleanly. Do not terminate unrelated processes or remove the journal. |
+
+Startup errors are displayed in the panel. The plugin uses Decky’s `root` flag for device and service access. Host commands are launched without Decky’s bundled library overrides to avoid loading incompatible libraries from its temporary runtime directory. System-library replacement is not part of installation or recovery.
+
+## Logs and feedback verification
+
+Logs normally reside in:
+
+```text
+/home/deck/homebrew/logs/ally-impulse/
+```
+
+- **`bridge.log`:** startup, errors and restoration messages.
+- **`reports.jsonl`:** incoming virtual Xbox reports and outgoing physical Ally reports, limited to approximately 4 MiB.
+
+Read recent startup errors with:
+
+```sh
+sudo tail -n 80 /home/deck/homebrew/logs/ally-impulse/bridge.log
+```
+
+For feedback diagnosis, start a fresh bridge session and run only the game being investigated. Avoid changing the slider during capture. In the JSONL log:
+
+- `source: "virtual-xbox-output"` records input from the virtual controller’s output interface. `xbox` contains the incoming report; `ally` contains the outgoing report.
+- `lt`, `rt`, `left_grip` and `right_grip` are the outgoing motor magnitudes.
+- `source: "slider-preview"` identifies an intentional preview pulse.
+- `preview_active: true` marks game reports recorded while a preview is affecting output. Exclude these when checking game-driven trigger output.
+
+An outgoing report is logged after the physical HID transfer succeeds. This establishes software delivery, not measured motor motion. UHID does not identify the submitting game or process. The panel’s **Trigger feedback received this session** indicator counts incoming nonzero trigger requests, including while output is disabled; it does not prove physical vibration. Rotated logs retain only a recent part of a session.
+
+## Development and licenses
+
+The frontend is in `src/`, the Decky backend is `main.py`, and the controller bridge is in `bridge/`. Build the frontend using the pinned dependencies:
 
 ```sh
 pnpm install --frozen-lockfile --ignore-scripts
 pnpm build
 ```
 
-Build tooling is adapted from the official Decky template at `90d0780e882a17f5714fc6de044c645f22608290`. Its BSD license and the bridge/descriptor/Wine reference licenses are included. The bundled frontend uses Decky's current `@decky/api` callable API and `@decky/ui` controls.
+The frontend listens for Steam game lifecycle events and reconciles running-app state outside the panel’s React lifecycle. Profile selection updates the live settings file without recreating the controller. Game and option values are validated, and backend commands use fixed executable/argument lists rather than UI-supplied shell commands.
 
-## Version 0.1.1 permission fix
-
-The plugin now declares `flags: ["root"]`, matching Decky’s loader privilege check. Version 0.1.0 incorrectly used `_root` from the template, causing the backend to run without required privileges. Restart Decky after replacing the metadata so it creates a new backend process with the corrected flag. Source: https://github.com/SteamDeckHomebrew/decky-loader/blob/main/backend/decky_loader/plugin/sandboxed_plugin.py
-
-## Device busy diagnosis (0.1.2)
-
-An exclusive evdev grab held by another process prevents the bridge from taking input ownership. The updated error names the event node and lists processes with it open; that list alone does not prove which process holds the grab. Physical feature-report EBUSY errors are labeled separately. Exit the old standalone bridge cleanly and stop any other controller mapper before retrying. Do not kill every process in the list: Steam and ordinary readers may have legitimate nonexclusive opens. Logs: `sudo tail -n 60 /home/deck/homebrew/logs/ally-impulse/bridge.log`.
-
-## InputPlumber ownership fix (0.1.4)
-
-All service operations explicitly address the system manager. Before grabbing input, the bridge temporarily runtime-masks InputPlumber (unless it was already masked), stops it, and checks that it stopped. The journal records whether this bridge created the mask. Restoration removes only that recorded runtime mask and starts InputPlumber only if it was active at the initial snapshot. Decky is left running. The mask blocks automatic service reactivation during bridge ownership and disappears on reboot. A crash requires journal recovery to remove the mask without rebooting. This new service-management behavior is source implemented and not yet confirmed on the user’s device.
-
-## Decky bundled-library fix (0.1.5)
-
-Decky’s PyInstaller library environment must not be inherited by host executables. Version 0.1.5 removes LD_LIBRARY_PATH and related library/Python overrides from the environment used to start the bridge, recovery Python, modprobe, and helper commands including systemctl. This fixes the identified incompatible `/tmp/_MEI.../libcrypto.so.3` selection without replacing system libraries or changing Decky’s own environment. It also explains how previous `is-active` checks could fail and incorrectly omit an active InputPlumber service. This code change is not yet confirmed in the user’s Decky session.
-
-## Slider preview and launch-option copy (0.1.6)
-
-Changing strength while enabled requests a 150 ms ping on both impulse triggers at the selected 0–100% magnitude after 250 ms without slider changes. 0% is silent; when disabled the strength is saved without playing a ping. Preview requests expire after two seconds, are not replayed on startup, and are marked `slider-preview` in the report log. Game output arriving during a preview preserves grip magnitudes and uses the preview trigger magnitudes until the preview ends; recent game output resumes afterward, otherwise triggers are zeroed. Preview output does not increment the game-trigger-request counter.
-
-The **Copy launch option** button copies the reusable command using the actual installed wrapper path. Paste into Steam → game → Properties → General → Launch Options. Also disable Steam Input in Properties → Controller. Preserve any existing launch options before editing. The button uses browser clipboard writing with a selection-copy fallback for Steam CEF; if clipboard access is unavailable it displays the command for manual copying. Clipboard behavior and physical pings remain to be confirmed in the user’s session.
-
-## Decky log ownership fix (0.1.7)
-
-Decky-managed sessions accept a report log owned by root or the configured Decky user. The opened file must still be regular with one link; symlinks remain rejected, and permissions are set to 0600. Standalone sessions retain the root-owner requirement. This handles user-owned logs after Decky installation/update without recursively changing plugin/settings/log directory ownership. The original error did not print file ownership, so Decky ownership rewriting remains the likely explanation rather than a verified cause.
-
-## Rear buttons and Library/QAM (0.1.8)
-
-M1 (F15) now maps to right-stick click/R3; M2 (F14) maps to left-stick click/L3. Physical stick clicks continue working and overlapping aliases remain combined. The bridge saves the physical gamepad’s `qam_mode` and selects mode 1 while running. In the pinned kernel driver, right-side shortcut reports 0x38/0x93 generate a timed Guide-down, A-down, A-up, Guide-up sequence, which the bridge forwards as Xbox+A for Steam QAM. The previous qam_mode is restored on stop/recovery. If the attribute is unavailable, the bridge logs that the shortcut is unavailable and still supports normal controls. Firmware event identity and Steam QAM behavior require confirmation on-device; no extra F17/F18 mapping is assumed.
-
-## Kernel compatibility (0.1.9)
-
-The exact kernel release restriction is removed. Startup still requires Xbox Ally X board RC73XA and controller USB 0b05:1b4c. Before changing controller settings, the bridge checks the physical evdev identity, required stick/trigger/D-pad axes and ranges, required gamepad buttons, UHID availability, and the Ally driver configuration/remapping attributes. Existing opened-hidraw identity checks and transfer errors remain enforced. Optional qam_mode is used only when available. A different kernel produces a baseline warning rather than a rejection. These checks allow compatible Valve or other kernels with the required driver interfaces; they do not prove firmware motor-report compatibility or guarantee support for stock kernels lacking those interfaces. Only the README’s FH5/SteamOS/kernel baseline is user-tested.
-
-## Per-game profiles (0.2.0)
-
-The backend migrates the previous flat `settings.json` into version 2 with `defaults` and AppID-keyed `games`. Top-level `enabled` and `strength` remain the effective live controls read by the existing bridge. Profile changes are atomic file replacements; no bridge restart or device recreation is needed. Old settings are backed up before migration. On backend startup the default is selected first, then the frontend reconciles the currently running Steam game. A brief default-profile interval is possible during a Decky reload.
-
-A plugin-lifetime frontend listener uses `SteamClient.GameSessions.RegisterForAppLifetimeNotifications`, with one-second `SteamUIStore` reconciliation for already-running games and resume/reload recovery. It is installed outside React panel mount/unmount. App IDs and option values are validated by the backend; edits carry the expected AppID so a delayed slider save cannot affect a different game. Unknown/unsupported Steam UI detection may leave the default active. Automatic profile application does not generate a slider preview. Both game enable state and strength are remembered.
-
-Frontend build and Python compilation are performed for distribution. Live Steam lifecycle events, multi-app selection, profile migration and hardware behavior of this release have not yet been exercised on the user’s device.
+The project is [MIT-licensed](../LICENSE). Included third-party material retains its own notices: [Decky template/build configuration](../licenses/DECKY-TEMPLATE-BSD-3-Clause) and the [libvirtualhid-derived Xbox descriptor](../bridge/reference/libvirtualhid-MIT.md).
