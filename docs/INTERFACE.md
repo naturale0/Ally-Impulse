@@ -6,12 +6,12 @@ This wireframe shows the current control order with an example running game and 
 
 ## Control order
 
-1. **Trigger Haptics** toggle. Turning it off invokes the existing backend stop-and-restore command.
+1. **Trigger Haptics** toggle, without a helper description. Turning it off invokes the existing backend stop-and-restore command.
 2. **Trigger strength** slider, without a preview/silent description. Strength preview behavior is retained.
-3. Active profile name and description.
+3. **Active profile:** followed by the game name on the same line, with its profile description below.
 4. **Use default for this game**, when applicable.
-5. Connection/feedback status and hints.
-6. **Copy launch option**, followed by copy feedback when applicable.
+5. Connection/feedback status and button mappings. The duplicated Steam Input/launch-option hint is omitted.
+6. **Copy launch option**, followed by the launch-option paste instructions and Steam Input instructions beneath the button. Copy feedback follows these instructions when applicable.
 
 There is no separate **Stop controller bridge** button. The Python backend is unchanged.
 
@@ -27,5 +27,5 @@ There is no separate **Stop controller bridge** button. The Python backend is un
 
 - **Use default for this game** appears only when the running game has a saved override.
 - Controller feedback status appears while the virtual controller is ready.
-- Errors appear after the status/hints block when present.
-- Copy feedback and the launch command appear immediately after the copy-button block following a copy attempt.
+- Errors appear after the status/mappings block when present.
+- Copy feedback and the launch command appear after the copy button’s setup instructions following a copy attempt.

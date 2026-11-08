@@ -58,7 +58,7 @@ function Content() {
   };
   return <PanelSection title="Impulse triggers">
     <PanelSectionRow><ToggleField label="Trigger Haptics" checked={status?.enabled ?? false}
-      disabled={busy || !status} description="Use independent feedback requested by the game."
+      disabled={busy || !status}
       onChange={(value) => void toggleHaptics(value)} /></PanelSectionRow>
     <PanelSectionRow><SliderField label="Trigger strength" value={strength} min={0} max={100} step={5}
       showValue valueSuffix="%" disabled={busy || !status}
@@ -70,7 +70,7 @@ function Content() {
         timer.current = setTimeout(() => void update(enabled, value, true, context), 250);
       }} /></PanelSectionRow>
     <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
-      <strong>{status?.active_game?.name ?? 'Default profile'}</strong>
+      <div>Active profile: <strong>{status?.active_game?.name ?? 'Default profile'}</strong></div>
       <div>{status?.active_game
         ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
         : 'Used when no game is running and by games without saved settings.'}</div>
@@ -89,11 +89,9 @@ function Content() {
       {status?.ready && <div>{status.trigger_requests > 0 ? 'Trigger feedback received this session' : 'Waiting for game trigger feedback'}</div>}
       <div>M1 → R3 · M2 → L3</div>
       <div>Library → Quick Access Menu</div>
-      <div>Disable Steam Input for the game. Some games also need the included launch option.</div>
       {(error || status?.error) && <div style={{color: '#ffb4ab', marginTop: '8px'}}>{error || status?.error}</div>}
     </div></PanelSectionRow>
     <PanelSectionRow><ButtonItem layout="below" disabled={!launchOption}
-      description="Paste into your game’s Properties → General → Launch Options in Steam. Disable Steam Input under Properties → Controller."
       onClick={async () => {
         setCopyNote('');
         try {
@@ -113,6 +111,10 @@ function Content() {
           setCopyNote(copied ? 'Copied. Paste it into Launch Options.' : 'Copy unavailable. The launch option is shown below.');
         } catch(e) { setCopyNote('Could not copy: ' + String(e)); }
       }}>Copy launch option</ButtonItem></PanelSectionRow>
+    <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
+      <div>Paste into your game’s Properties → General → Launch Options in Steam.</div>
+      <div>Disable Steam Input under Properties → Controller.</div>
+    </div></PanelSectionRow>
     {copyNote && <PanelSectionRow><div style={{fontSize: '12px', overflowWrap: 'anywhere'}}>
       <div>{copyNote}</div><div style={{userSelect: 'text', marginTop: '6px'}}>{launchOption}</div>
       <div style={{marginTop: '6px'}}>Keep a copy of existing launch options before editing them.</div>
