@@ -182,9 +182,16 @@ class Plugin:
         return await self.get_status()
 
     async def get_launch_option(self):
-        # Quote the installed path for Steam's shell launch command.
+        # Expand HOME in the game's shell, not in Decky's root backend.
         import shlex
-        return shlex.quote(str(ROOT/'game-env.sh'))+' %command%'
+        wrapper=ROOT/'game-env.sh'
+        try:
+            relative=wrapper.relative_to(Path(decky.DECKY_USER_HOME)).as_posix()
+        except ValueError:
+            return shlex.quote(str(wrapper))+' %command%'
+        # Keep HOME expandable while treating the installed suffix as literal text.
+        escaped=relative.replace('\\','\\\\').replace('"','\\"').replace('$','\\$').replace('`','\\`')
+        return '"$HOME/'+escaped+'" %command%'
 
     async def stop_bridge(self):
         await self.initialized.wait()

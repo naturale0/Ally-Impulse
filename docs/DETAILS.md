@@ -25,10 +25,10 @@ A brief slider preview is an intentional exception: it sends a test pulse so the
 The standard command is:
 
 ```text
-/home/deck/homebrew/plugins/ally-impulse/game-env.sh %command%
+"$HOME/homebrew/plugins/ally-impulse/game-env.sh" %command%
 ```
 
-The copy button uses the actual installed path if it differs. The wrapper selects SDL’s Xbox HIDAPI input path and sets the relevant Proton options. It does not start the bridge or change a game’s files. Some games require additional compatibility work; see the [Motorsport guide](FORZA-MOTORSPORT.md) for its separate controller-ID patch and FM Tools/Xodus prerequisites.
+The copy button uses `$HOME` for the part under the Steam user’s home directory and preserves the actual installation subdirectory. Quotes handle spaces in the path. For installations outside that home directory, it uses a quoted absolute path instead. The wrapper selects SDL’s Xbox HIDAPI input path and sets the relevant Proton options. It does not start the bridge or change a game’s files. Some games require additional compatibility work; see the [Motorsport guide](FORZA-MOTORSPORT.md) for its separate controller-ID patch and FM Tools/Xodus prerequisites.
 
 The wrapper allows only controllers with the virtual Xbox Series identity `045e:0b13` in SDL. Other controllers are excluded from that game’s SDL input path. A physical controller with the same identity may still appear, so disconnect additional controllers when diagnosing duplicate input.
 

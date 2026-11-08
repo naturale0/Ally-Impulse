@@ -56,10 +56,10 @@ Requires SteamOS, Decky Loader and Python 3. Exit games and stop any existing co
 2. Disable Steam Input for that game.
 3. Use **Copy launch option**, then paste into **Steam → game that you want Impulse Trigger functionality → game Properties → General → Launch Options**. Save any existing launch options before editing.
 
-The launch option normally looks like:
+The launch option normally looks like this. `$HOME` expands to the account running Steam, so the command is not tied to a username such as `deck`:
 
 ```text
-/home/deck/homebrew/plugins/ally-impulse/game-env.sh %command%
+"$HOME/homebrew/plugins/ally-impulse/game-env.sh" %command%
 ```
 
 It is recommended to use **GE-Proton11-5**, as the plugin selects the SDL input route checked against this specific version. In principle, other games can work with this setup if they recognize the virtual Xbox controller and send independent LT/RT vibration through the Wine/SDL path. 

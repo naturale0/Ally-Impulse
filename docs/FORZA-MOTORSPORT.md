@@ -40,7 +40,7 @@ All target hashes are checked before writes begin. Originals are backed up besid
 Keep the working FM Tools authentication/runtime settings and your existing Xodus startup script. Enable Ally Impulse before launching Motorsport, and disable Steam Input for the game. Example using the previously tested launch-script arrangement:
 
 ```text
-PRESSURE_VESSEL_FILESYSTEMS_RW=/run/user/1000/xodus.sock WINEDLLOVERRIDES=xgameruntime=b PROTON_VKD3D_HEAP=1 VKD3D_CONFIG=skip_application_workarounds,descriptor_heap,avoid_image_buffer_aliasing /home/deck/homebrew/plugins/ally-impulse/game-env.sh /bin/bash "$HOME/Documents/forza-launch.sh" %command%
+PRESSURE_VESSEL_FILESYSTEMS_RW=/run/user/1000/xodus.sock WINEDLLOVERRIDES=xgameruntime=b PROTON_VKD3D_HEAP=1 VKD3D_CONFIG=skip_application_workarounds,descriptor_heap,avoid_image_buffer_aliasing "$HOME/homebrew/plugins/ally-impulse/game-env.sh" /bin/bash "$HOME/Documents/forza-launch.sh" %command%
 ```
 
 Use your real socket, plugin and script paths. The `forza-launch.sh` file is part of your FM Tools setup, not supplied by Ally Impulse. Do not replace an existing working launch command with this example blindly. Remove the unsuccessful `PROTON_EMULATE_STEAMINPUT=1` identity-emulation setting if it was added during troubleshooting. No Ally Impulse code changes are needed for the DLL patch.

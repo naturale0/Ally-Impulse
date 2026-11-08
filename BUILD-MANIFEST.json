@@ -1,10 +1,10 @@
 {
-  "version": "0.2.3",
+  "version": "0.2.4",
   "decky_template_revision": "90d0780e882a17f5714fc6de044c645f22608290",
   "base_bridge": "Corrected ally-controller-gamefeedback, with direct kernel configuration and HID_UNIQ discovery",
   "build": "Rollup frontend build completed; Python source compilation completed. No new hardware, Decky UI, or game execution performed.",
   "source_sha256": {
-    "main.py": "d74b9923141ba1932b9c635ed496bd2079839aa53e2d03e81dac1ad726718c45",
+    "main.py": "983b5660052c059eef3c54c02a3979c69283545e2d040468fb84356124854db8",
     "src/index.tsx": "4792fff53c5428b0df94fbb9e7f320baa84e18bb3930ea7e04ff40c9b645cf38",
     "bridge/bridge.py": "cd5dbab9adbff9ccfb02f47ba48f1204225cf7d62a91d6fe9b72c52e567c461b",
     "bridge/allyctl.py": "079f9260a69c4ab4538072fa105d207efbc4ae173e7599eac111183a39da4467",
@@ -25,5 +25,6 @@
   "mapping_update": "M1=R3, M2=L3. Save/enable/restore kernel qam_mode for timed Xbox+A. Frontend build and Python compilation completed; physical Library event and QAM behavior unverified.",
   "kernel_compatibility": "Remove exact release gate; require hardware identity and UHID/evdev/sysfs capabilities. Python compilation completed; no other-kernel hardware tests performed.",
   "per_game_profiles": "Steam lifecycle listener and running-app reconciliation; AppID-keyed enable/strength profiles, migration backup, context-guarded edits, default/reset behavior. Frontend build and Python compilation completed. No live game, Decky lifecycle, migration or hardware tests performed.",
-  "interface_update": "Haptics stength label as requested; always-visible read-only selectable single-line launch-option textarea with horizontal scrolling; reset button above its description. Backend unchanged. Frontend build completed; live Decky rendering unverified."
+  "interface_update": "Haptics stength label as requested; always-visible read-only selectable single-line launch-option textarea with horizontal scrolling; reset button above its description. Backend unchanged. Frontend build completed; live Decky rendering unverified.",
+  "launch_option_update": "Use literal quoted $HOME plus the installed suffix under DECKY_USER_HOME; escape suffix shell metacharacters; use shlex-quoted absolute path outside home. Python compilation completed; no live Steam execution."
 }
