@@ -1,6 +1,6 @@
 {
   "name": "ally-impulse",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Independent game-driven trigger vibration for Xbox Ally X",
   "type": "module",
   "scripts": {

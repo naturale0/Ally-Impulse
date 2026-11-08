@@ -52,7 +52,7 @@ Requires SteamOS, Decky Loader and Python 3. Exit games and stop any existing co
 
 ### After either installation method
 
-1. Open **Decky → Ally Impulse** and enable trigger vibration before starting a game.
+1. Open **Decky → Ally Impulse** and turn on **Trigger Haptics** before starting a game.
 2. Disable Steam Input for that game.
 3. Use **Copy launch option**, then paste into **Steam → game that you want Impulse Trigger functionality → game Properties → General → Launch Options**. Save any existing launch options before editing.
 
@@ -106,7 +106,7 @@ The plugin creates a virtual Xbox Series Bluetooth HID controller using Linux UH
 
 If InputPlumber is active, it is temporarily stopped and blocked from restarting while the bridge runs. 
 
-Turning vibration off keeps the virtual controller connected. Use **Stop controller bridge** after exiting the game to restore the original controller configuration and any paused InputPlumber service.
+Turn **Trigger Haptics** off after exiting the game to stop the bridge and restore the original controller configuration and any paused InputPlumber service. Switching it off during a game can disconnect that game’s controller.
 
 The plugin needs root privileges for device access and temporary service management. **It does not replace the kernel, install permanent udev rules or modify games’ launch options automatically.**
 
@@ -125,7 +125,7 @@ Existing settings become your default on upgrade; a copy is kept as `settings-be
 
 Automatic selection uses Steam game-lifetime notifications and its running-app state. If multiple apps are running, the Steam-reported main app is preferred; the last reported running app is the fallback. This feature requires confirmation on your Steam/Decky build. If the panel shows **Default profile** while your game is running, automatic detection has not selected it yet—do not assume edits are being saved for that game.
 
-Turning vibration off keeps the bridge connected. **Stop controller bridge** disables the current profile and the default, then restores the physical controller; other saved game profiles remain intact and can start it on a later game launch.
+Turning **Trigger Haptics** off disables the current profile and the default, stops the bridge and restores the physical controller. Other saved game profiles remain intact and can start it on a later game launch.
 
 ## Sleep/wake and system restarts
 

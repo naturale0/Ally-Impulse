@@ -43,19 +43,25 @@ function Content() {
     catch (e) { if (active.current) setError(String(e)); }
     finally { changing.current = false; if (active.current) setBusy(false); }
   };
+  const toggleHaptics = async (enabled: boolean) => {
+    if (enabled) { await update(true, strength); return; }
+    if (timer.current) clearTimeout(timer.current);
+    const context = latest.current?.active_game?.id ?? null;
+    revision.current++; changing.current = true; setBusy(true); setError('');
+    try {
+      // Preserve the selected strength, then reuse the existing backend stop path.
+      await setOptions(false, strength, false, context);
+      const result = await stopBridge();
+      if (active.current) accept(result);
+    } catch(e) { if (active.current) setError(String(e)); }
+    finally { changing.current = false; if (active.current) setBusy(false); }
+  };
   return <PanelSection title="Impulse triggers">
-    <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
-      <strong>{status?.active_game?.name ?? 'Default profile'}</strong>
-      <div>{status?.active_game
-        ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
-        : 'Used when no game is running and by games without saved settings.'}</div>
-    </div></PanelSectionRow>
-    <PanelSectionRow><ToggleField label="Enable trigger vibration" checked={status?.enabled ?? false}
+    <PanelSectionRow><ToggleField label="Trigger Haptics" checked={status?.enabled ?? false}
       disabled={busy || !status} description="Use independent feedback requested by the game."
-      onChange={(value) => void update(value, strength)} /></PanelSectionRow>
+      onChange={(value) => void toggleHaptics(value)} /></PanelSectionRow>
     <PanelSectionRow><SliderField label="Trigger strength" value={strength} min={0} max={100} step={5}
       showValue valueSuffix="%" disabled={busy || !status}
-      description="A brief preview plays at this strength when enabled. 0% is silent."
       onChange={(value) => {
         setStrength(value); revision.current++; changing.current = true;
         if (timer.current) clearTimeout(timer.current);
@@ -63,6 +69,12 @@ function Content() {
         const enabled = latest.current?.enabled ?? false;
         timer.current = setTimeout(() => void update(enabled, value, true, context), 250);
       }} /></PanelSectionRow>
+    <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
+      <strong>{status?.active_game?.name ?? 'Default profile'}</strong>
+      <div>{status?.active_game
+        ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
+        : 'Used when no game is running and by games without saved settings.'}</div>
+    </div></PanelSectionRow>
     {status?.active_game && status.custom_profile && <PanelSectionRow><ButtonItem layout="below" disabled={busy}
       description="Remove this game’s saved settings and use your default profile."
       onClick={async () => {
@@ -105,14 +117,7 @@ function Content() {
       <div>{copyNote}</div><div style={{userSelect: 'text', marginTop: '6px'}}>{launchOption}</div>
       <div style={{marginTop: '6px'}}>Keep a copy of existing launch options before editing them.</div>
     </div></PanelSectionRow>}
-    {status?.running && <PanelSectionRow><ButtonItem layout="below" disabled={busy}
-      description="Exit your game first. This restores the original controller."
-      onClick={async () => {
-        if (timer.current) clearTimeout(timer.current);
-        revision.current++; changing.current = true; setBusy(true);
-        try { accept(await stopBridge()); } catch(e) { setError(String(e)); }
-        finally { changing.current = false; setBusy(false); }
-      }}>Stop controller bridge</ButtonItem></PanelSectionRow>}
+
   </PanelSection>;
 }
 export default definePlugin(() => {

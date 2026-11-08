@@ -277,9 +277,36 @@ function Content() {
                 setBusy(false);
         }
     };
-    return SP_JSX.jsxs(DFL.PanelSection, { title: "Impulse triggers", children: [SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '13px', lineHeight: 1.5 }, children: [SP_JSX.jsx("strong", { children: status?.active_game?.name ?? 'Default profile' }), SP_JSX.jsx("div", { children: status?.active_game
-                                ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
-                                : 'Used when no game is running and by games without saved settings.' })] }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ToggleField, { label: "Enable trigger vibration", checked: status?.enabled ?? false, disabled: busy || !status, description: "Use independent feedback requested by the game.", onChange: (value) => void update(value, strength) }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.SliderField, { label: "Trigger strength", value: strength, min: 0, max: 100, step: 5, showValue: true, valueSuffix: "%", disabled: busy || !status, description: "A brief preview plays at this strength when enabled. 0% is silent.", onChange: (value) => {
+    const toggleHaptics = async (enabled) => {
+        if (enabled) {
+            await update(true, strength);
+            return;
+        }
+        if (timer.current)
+            clearTimeout(timer.current);
+        const context = latest.current?.active_game?.id ?? null;
+        revision.current++;
+        changing.current = true;
+        setBusy(true);
+        setError('');
+        try {
+            // Preserve the selected strength, then reuse the existing backend stop path.
+            await setOptions(false, strength, false, context);
+            const result = await stopBridge();
+            if (active.current)
+                accept(result);
+        }
+        catch (e) {
+            if (active.current)
+                setError(String(e));
+        }
+        finally {
+            changing.current = false;
+            if (active.current)
+                setBusy(false);
+        }
+    };
+    return SP_JSX.jsxs(DFL.PanelSection, { title: "Impulse triggers", children: [SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ToggleField, { label: "Trigger Haptics", checked: status?.enabled ?? false, disabled: busy || !status, description: "Use independent feedback requested by the game.", onChange: (value) => void toggleHaptics(value) }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.SliderField, { label: "Trigger strength", value: strength, min: 0, max: 100, step: 5, showValue: true, valueSuffix: "%", disabled: busy || !status, onChange: (value) => {
                         setStrength(value);
                         revision.current++;
                         changing.current = true;
@@ -288,7 +315,9 @@ function Content() {
                         const context = latest.current?.active_game?.id ?? null;
                         const enabled = latest.current?.enabled ?? false;
                         timer.current = setTimeout(() => void update(enabled, value, true, context), 250);
-                    } }) }), status?.active_game && status.custom_profile && SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ButtonItem, { layout: "below", disabled: busy, description: "Remove this game\u2019s saved settings and use your default profile.", onClick: async () => {
+                    } }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '13px', lineHeight: 1.5 }, children: [SP_JSX.jsx("strong", { children: status?.active_game?.name ?? 'Default profile' }), SP_JSX.jsx("div", { children: status?.active_game
+                                ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
+                                : 'Used when no game is running and by games without saved settings.' })] }) }), status?.active_game && status.custom_profile && SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ButtonItem, { layout: "below", disabled: busy, description: "Remove this game\u2019s saved settings and use your default profile.", onClick: async () => {
                         const id = latest.current?.active_game?.id;
                         if (!id)
                             return;
@@ -341,23 +370,7 @@ function Content() {
                         catch (e) {
                             setCopyNote('Could not copy: ' + String(e));
                         }
-                    }, children: "Copy launch option" }) }), copyNote && SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '12px', overflowWrap: 'anywhere' }, children: [SP_JSX.jsx("div", { children: copyNote }), SP_JSX.jsx("div", { style: { userSelect: 'text', marginTop: '6px' }, children: launchOption }), SP_JSX.jsx("div", { style: { marginTop: '6px' }, children: "Keep a copy of existing launch options before editing them." })] }) }), status?.running && SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.ButtonItem, { layout: "below", disabled: busy, description: "Exit your game first. This restores the original controller.", onClick: async () => {
-                        if (timer.current)
-                            clearTimeout(timer.current);
-                        revision.current++;
-                        changing.current = true;
-                        setBusy(true);
-                        try {
-                            accept(await stopBridge());
-                        }
-                        catch (e) {
-                            setError(String(e));
-                        }
-                        finally {
-                            changing.current = false;
-                            setBusy(false);
-                        }
-                    }, children: "Stop controller bridge" }) })] });
+                    }, children: "Copy launch option" }) }), copyNote && SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '12px', overflowWrap: 'anywhere' }, children: [SP_JSX.jsx("div", { children: copyNote }), SP_JSX.jsx("div", { style: { userSelect: 'text', marginTop: '6px' }, children: launchOption }), SP_JSX.jsx("div", { style: { marginTop: '6px' }, children: "Keep a copy of existing launch options before editing them." })] }) })] });
 }
 var index = definePlugin(() => {
     const stopTracking = startGameTracking();

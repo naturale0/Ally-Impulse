@@ -18,7 +18,7 @@ A brief slider preview is an intentional exception: it sends a test pulse so the
 ## Starting and using the controller
 
 1. Exit any older standalone bridge before enabling the plugin.
-2. Open **Decky → Ally Impulse** and enable trigger vibration. Wait for **Controller connected** before launching a game.
+2. Open **Decky → Ally Impulse** and turn on **Trigger Haptics**. Wait for **Controller connected** before launching a game.
 3. Disable Steam Input for the game.
 4. Use **Copy launch option** and paste the command into **Steam → game Properties → General → Launch Options**. Preserve existing launch options before editing them.
 
@@ -36,11 +36,10 @@ The wrapper allows only controllers with the virtual Xbox Series identity `045e:
 
 | Control | Behavior |
 | --- | --- |
-| **Enable trigger vibration** | Starts the bridge if needed. Turning it off zeros trigger output while keeping the virtual controller, normal input and grip rumble connected. |
+| **Trigger Haptics** | Starts the bridge when turned on. Turning it off stops the bridge, disconnects the virtual controller and restores the physical controller. Exit the game before switching it off. |
 | **Trigger strength** | Scales trigger requests from 0–100%. At 100%, the game’s requested intensity passes through; 0% is silent. |
 | **Use default for this game** | Removes the running game’s saved override and applies the default profile. |
 | **Copy launch option** | Copies the reusable wrapper command. If clipboard access fails, the command is displayed for manual copying. |
-| **Stop controller bridge** | Disconnects the virtual controller, releases physical input ownership and restores saved controller/service settings. Exit the game before using it. |
 
 Button mappings while the bridge runs:
 
@@ -71,7 +70,7 @@ Steam-added non-Steam shortcuts can have profiles when Steam reports their lifec
 
 If the panel still shows **Default profile** while a game runs, game detection has not selected it. Changes made in that state edit the default, not a game-specific profile. The backend rejects a delayed edit if the selected game changes before the edit is saved.
 
-**Stop controller bridge** disables the current profile and the default before stopping. Other saved game profiles remain intact and can start the bridge on a later launch.
+Turning **Trigger Haptics** off disables the current profile and the default before stopping the bridge. Other saved game profiles remain intact and can start the bridge on a later launch.
 
 ### Settings storage and upgrades
 
@@ -111,10 +110,10 @@ Restarting Decky while a game runs can disconnect and recreate the virtual contr
 ### Normal stop
 
 1. Exit the game.
-2. Open Ally Impulse and select **Stop controller bridge**.
+2. Open Ally Impulse and turn **Trigger Haptics** off.
 3. Wait for **Controller bridge stopped**.
 
-This restores the saved physical controller configuration and any InputPlumber service state managed by the bridge. Turning only the vibration toggle off does **not** perform this restoration, because the virtual controller stays connected.
+This restores the saved physical controller configuration and any InputPlumber service state managed by the bridge. The toggle uses the backend’s existing stop-and-restore command; there is no separate stop button.
 
 ### Recovery after an interruption
 

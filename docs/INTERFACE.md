@@ -4,6 +4,17 @@ This wireframe shows the current control order with an example running game and 
 
 ![Annotated Ally Impulse panel with approximate control sizes](images/decky-interface-wireframe.png)
 
+## Control order
+
+1. **Trigger Haptics** toggle. Turning it off invokes the existing backend stop-and-restore command.
+2. **Trigger strength** slider, without a preview/silent description. Strength preview behavior is retained.
+3. Active profile name and description.
+4. **Use default for this game**, when applicable.
+5. Connection/feedback status and hints.
+6. **Copy launch option**, followed by copy feedback when applicable.
+
+There is no separate **Stop controller bridge** button. The Python backend is unchanged.
+
 ## Sizing
 
 - The drawing assumes an approximately 320 CSS-pixel-wide panel, with 16-pixel side padding.
@@ -18,4 +29,3 @@ This wireframe shows the current control order with an example running game and 
 - Controller feedback status appears while the virtual controller is ready.
 - Errors appear after the status/hints block when present.
 - Copy feedback and the launch command appear immediately after the copy-button block following a copy attempt.
-- **Stop controller bridge** appears only while the bridge is running.
