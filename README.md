@@ -1,6 +1,6 @@
 # Ally Impulse
 
-A Decky Loader plugin for genuine, game-driven impulse-trigger vibration on the **Xbox Ally X**. It forwards independent left- and right-trigger feedback to the built-in motors rather than deriving effects from throttle, braking or grip rumble.
+A Decky Loader plugin for genuine, game-driven impulse-trigger vibration on the **Xbox Ally X**. It forwards independent left- and right-trigger feedback to the built-in motors rather than mirroring grip vibrations.
 
 ## Features
 
