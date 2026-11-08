@@ -1,18 +1,18 @@
 {
-  "version": "0.2.2",
+  "version": "0.2.3",
   "decky_template_revision": "90d0780e882a17f5714fc6de044c645f22608290",
   "base_bridge": "Corrected ally-controller-gamefeedback, with direct kernel configuration and HID_UNIQ discovery",
   "build": "Rollup frontend build completed; Python source compilation completed. No new hardware, Decky UI, or game execution performed.",
   "source_sha256": {
     "main.py": "d74b9923141ba1932b9c635ed496bd2079839aa53e2d03e81dac1ad726718c45",
-    "src/index.tsx": "62b509d3210d18fbd009749c252f84230dc9c817e8f70dd9e1c290e8ecadb6c5",
+    "src/index.tsx": "4792fff53c5428b0df94fbb9e7f320baa84e18bb3930ea7e04ff40c9b645cf38",
     "bridge/bridge.py": "cd5dbab9adbff9ccfb02f47ba48f1204225cf7d62a91d6fe9b72c52e567c461b",
     "bridge/allyctl.py": "079f9260a69c4ab4538072fa105d207efbc4ae173e7599eac111183a39da4467",
     "bridge/xbox-series.desc": "77217d17ac62542112c88f81873637569273515f092ad86299be354bc8f14fcc",
     "game-env.sh": "926a95cc7fbb9df2716c0a43c264fab32e69df5a83b4b3f1e82c64e4fbe475a6",
     "pnpm-lock.yaml": "3461c00a028ae17bbf8dd01e86dd961961849efeb31c14856ec523a4dc844edf",
     "plugin.json": "3eb94bcb11dfb1864f5513edcccdcbf8dc94ed3647c6b2cf407f56658b10bcf1",
-    "dist/index.js": "76709ec87a8a99b199db683ff8261b4142f053a98def17beb8df4a0c27b57f6f",
+    "dist/index.js": "aa04e5ac37d1870d29170adc275ea448c13a34c3c12d19440ec89a50f488b51b",
     "src/game-tracking.ts": "9f8765b8dac811998e5c9de05017bab3d86cbd2a1109c934c39deb1bff33c989"
   },
   "privilege_fix": "flags root matches Decky sandboxed_plugin.py; no hardware execution performed",
@@ -25,5 +25,5 @@
   "mapping_update": "M1=R3, M2=L3. Save/enable/restore kernel qam_mode for timed Xbox+A. Frontend build and Python compilation completed; physical Library event and QAM behavior unverified.",
   "kernel_compatibility": "Remove exact release gate; require hardware identity and UHID/evdev/sysfs capabilities. Python compilation completed; no other-kernel hardware tests performed.",
   "per_game_profiles": "Steam lifecycle listener and running-app reconciliation; AppID-keyed enable/strength profiles, migration backup, context-guarded edits, default/reset behavior. Frontend build and Python compilation completed. No live game, Decky lifecycle, migration or hardware tests performed.",
-  "interface_update": "Remove toggle helper and duplicated status hint; prefix game title with Active profile:; place copy setup instructions after the button. Backend unchanged. Frontend build completed; live Decky rendering unverified."
+  "interface_update": "Haptics stength label as requested; always-visible read-only selectable single-line launch-option textarea with horizontal scrolling; reset button above its description. Backend unchanged. Frontend build completed; live Decky rendering unverified."
 }

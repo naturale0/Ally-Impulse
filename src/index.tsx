@@ -60,7 +60,7 @@ function Content() {
     <PanelSectionRow><ToggleField label="Trigger Haptics" checked={status?.enabled ?? false}
       disabled={busy || !status}
       onChange={(value) => void toggleHaptics(value)} /></PanelSectionRow>
-    <PanelSectionRow><SliderField label="Trigger strength" value={strength} min={0} max={100} step={5}
+    <PanelSectionRow><SliderField label="Haptics stength" value={strength} min={0} max={100} step={5}
       showValue valueSuffix="%" disabled={busy || !status}
       onChange={(value) => {
         setStrength(value); revision.current++; changing.current = true;
@@ -75,15 +75,17 @@ function Content() {
         ? (status.custom_profile ? 'Saved settings for this game. Changes save automatically.' : 'Using your default. Changing a setting saves a profile for this game.')
         : 'Used when no game is running and by games without saved settings.'}</div>
     </div></PanelSectionRow>
-    {status?.active_game && status.custom_profile && <PanelSectionRow><ButtonItem layout="below" disabled={busy}
-      description="Remove this game’s saved settings and use your default profile."
+    {status?.active_game && status.custom_profile && <><PanelSectionRow><ButtonItem layout="below" disabled={busy}
       onClick={async () => {
         const id = latest.current?.active_game?.id; if (!id) return;
         if (timer.current) clearTimeout(timer.current);
         revision.current++; changing.current = true; setBusy(true); setError('');
         try { accept(await resetGameProfile(id)); } catch(e) { setError(String(e)); }
         finally { changing.current = false; setBusy(false); }
-      }}>Use default for this game</ButtonItem></PanelSectionRow>}
+      }}>Use default for this game</ButtonItem></PanelSectionRow>
+    <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
+      Remove this game’s saved settings and use your default profile.
+    </div></PanelSectionRow></>}
     <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
       {status?.ready ? 'Controller connected' : status?.running ? 'Starting controller…' : 'Controller bridge stopped'}
       {status?.ready && <div>{status.trigger_requests > 0 ? 'Trigger feedback received this session' : 'Waiting for game trigger feedback'}</div>}
@@ -108,15 +110,24 @@ function Content() {
             try { input.focus(); input.select(); copied = document.execCommand('copy'); }
             finally { input.remove(); previous?.focus(); }
           }
-          setCopyNote(copied ? 'Copied. Paste it into Launch Options.' : 'Copy unavailable. The launch option is shown below.');
+          setCopyNote(copied ? 'Copied. Paste it into Launch Options.' : 'Copy unavailable. Select the launch-option field to copy it manually.');
         } catch(e) { setCopyNote('Could not copy: ' + String(e)); }
       }}>Copy launch option</ButtonItem></PanelSectionRow>
+    <PanelSectionRow><div style={{width: '100%', minWidth: 0}}>
+      <textarea aria-label="Launch option (read only)" readOnly rows={1} wrap="off"
+        value={launchOption} placeholder="Loading launch option…" spellCheck={false}
+        style={{display: 'block', width: '100%', boxSizing: 'border-box', height: '52px',
+          resize: 'none', overflowX: 'auto', overflowY: 'hidden', whiteSpace: 'pre',
+          userSelect: 'text', fontFamily: 'monospace', fontSize: '12px', lineHeight: '18px',
+          padding: '8px', border: '1px solid #53657a', borderRadius: '4px',
+          background: '#17212e', color: '#eef4fa'}} />
+    </div></PanelSectionRow>
     <PanelSectionRow><div style={{fontSize: '13px', lineHeight: 1.5}}>
       <div>Paste into your game’s Properties → General → Launch Options in Steam.</div>
       <div>Disable Steam Input under Properties → Controller.</div>
     </div></PanelSectionRow>
     {copyNote && <PanelSectionRow><div style={{fontSize: '12px', overflowWrap: 'anywhere'}}>
-      <div>{copyNote}</div><div style={{userSelect: 'text', marginTop: '6px'}}>{launchOption}</div>
+      <div>{copyNote}</div>
       <div style={{marginTop: '6px'}}>Keep a copy of existing launch options before editing them.</div>
     </div></PanelSectionRow>}
 

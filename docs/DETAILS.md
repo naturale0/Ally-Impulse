@@ -37,9 +37,9 @@ The wrapper allows only controllers with the virtual Xbox Series identity `045e:
 | Control | Behavior |
 | --- | --- |
 | **Trigger Haptics** | Starts the bridge when turned on. Turning it off stops the bridge, disconnects the virtual controller and restores the physical controller. Exit the game before switching it off. |
-| **Trigger strength** | Scales trigger requests from 0–100%. At 100%, the game’s requested intensity passes through; 0% is silent. |
+| **Haptics stength** | Scales trigger requests from 0–100%. At 100%, the game’s requested intensity passes through; 0% is silent. |
 | **Use default for this game** | Removes the running game’s saved override and applies the default profile. |
-| **Copy launch option** | Copies the reusable wrapper command. If clipboard access fails, the command is displayed for manual copying. |
+| **Copy launch option** | Copies the reusable wrapper command. The exact command is always displayed directly below the button in a read-only, selectable text box with horizontal scrolling. It can also be copied manually. |
 
 Button mappings while the bridge runs:
 
