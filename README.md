@@ -20,6 +20,7 @@ The following configurations have user-reported success on **Xbox Ally X**:
 | --- | --- | --- |
 | Forza Horizon 5 | GE-Proton11-5 | Standard Ally Impulse setup |
 | F1 23 | GE-Proton11-5 | Standard Ally Impulse setup |
+| F1 25 | `proton-cashyos-11.0-20261015-slr-x86_64` | [ReShade bypass and game-specific launch option](#f1-25) |
 | Forza Motorsport (2023) | GE-Proton11-3-FM | [FM Tools/Xodus setup](https://github.com/SoHiEarth/fm-tools#instructions) and the [controller-ID patch](#forza-motorsport-2023-required-patch) |
 
 Reported working SteamOS/kernel combinations:
@@ -104,6 +105,16 @@ python3 tools/motorsport-wgi-fix.py --restore
 ```
 
 The patch is specific to this DLL build. Proton updates or prefix repairs may replace it, and newer builds may not need it. For custom paths, hash details and recovery, see the [Motorsport patch guide](docs/FORZA-MOTORSPORT.md).
+
+## F1 25
+
+F1 25 has user-reported success with **`proton-cashyos-11.0-20261015-slr-x86_64`**. The reported working setup requires the [ReShade bypass for F1 25](https://www.overtake.gg/downloads/reshade-bypass-for-f1-25.78274/) and this complete command in **Properties → General → Launch Options**:
+
+```text
+"$HOME/homebrew/plugins/ally-impulse/game-env.sh" echo "%command%" & VKD3D_SHADER_CACHE_PATH=0 "${STEAM_COMPAT_TOOL_PATHS%:*}"/proton run "$PWD/bypass.exe" & sleep 3; WINEDLLOVERRIDES="dxgi=n,b" VKD3D_SHADER_CACHE_PATH=0 "${STEAM_COMPAT_TOOL_PATHS%:*}"/proton run "$PWD/F1_25.exe"; pkill "F1_25.exe"
+```
+
+Enable Ally Impulse and disable Steam Input for the game. This command assumes the bypass is already set up, `bypass.exe` and `F1_25.exe` are in the game directory, and Ally Impulse is installed at the path shown. The final `pkill` targets processes named `F1_25.exe`. This is the user-reported launch command, not an independently tested configuration.
 
 ## How it works
 
