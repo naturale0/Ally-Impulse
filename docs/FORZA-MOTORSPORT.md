@@ -37,13 +37,13 @@ All target hashes are checked before writes begin. Originals are backed up besid
 
 ## Launch
 
-Keep the working FM Tools authentication/runtime settings and your existing Xodus startup script. Enable Ally Impulse before launching Motorsport, and disable Steam Input for the game. Example using the previously tested launch-script arrangement:
+Keep the working FM Tools authentication/runtime settings and your existing Xodus startup script. Enable Ally Impulse before launching Motorsport, and disable Steam Input for the game. For the reported working configuration, paste this complete command into **Properties → General → Launch Options**:
 
 ```text
-PRESSURE_VESSEL_FILESYSTEMS_RW=/run/user/1000/xodus.sock WINEDLLOVERRIDES=xgameruntime=b PROTON_VKD3D_HEAP=1 VKD3D_CONFIG=skip_application_workarounds,descriptor_heap,avoid_image_buffer_aliasing "$HOME/homebrew/plugins/ally-impulse/game-env.sh" /bin/bash "$HOME/Documents/forza-launch.sh" %command%
+PROTON_SPOOF_STEAMINPUT_VIDPID=0 PRESSURE_VESSEL_FILESYSTEMS_RW=/run/user/1000/xodus.sock WINEDLLOVERRIDES=xgameruntime=b PROTON_VKD3D_HEAP=1 VKD3D_CONFIG=skip_application_workarounds,descriptor_heap,avoid_image_buffer_aliasing "$HOME/homebrew/plugins/ally-impulse/game-env.sh" /bin/bash "$HOME/Documents/forza-launch.sh" %command%
 ```
 
-Use your real socket, plugin and script paths. The `forza-launch.sh` file is part of your FM Tools setup, not supplied by Ally Impulse. Do not replace an existing working launch command with this example blindly. Remove the unsuccessful `PROTON_EMULATE_STEAMINPUT=1` identity-emulation setting if it was added during troubleshooting. No Ally Impulse code changes are needed for the DLL patch.
+Include `PROTON_SPOOF_STEAMINPUT_VIDPID=0` as shown. Use your real socket, plugin and script paths; `/run/user/1000` assumes the Steam user’s numeric UID is `1000`. The `forza-launch.sh` file is part of your FM Tools setup, not supplied by Ally Impulse. Do not replace an existing working launch command with this example blindly. Remove the unsuccessful `PROTON_EMULATE_STEAMINPUT=1` identity-emulation setting if it was added during troubleshooting. No Ally Impulse code changes are needed for the DLL patch.
 
 After relaunch, verify menu controls and actual independent LT/RT feedback while driving. The slider preview alone does not establish game feedback.
 
