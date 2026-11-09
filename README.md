@@ -114,7 +114,7 @@ F1 25 has user-reported success with **`proton-cashyos-11.0-20261015-slr-x86_64`
 "$HOME/homebrew/plugins/ally-impulse/game-env.sh" echo "%command%" & VKD3D_SHADER_CACHE_PATH=0 "${STEAM_COMPAT_TOOL_PATHS%:*}"/proton run "$PWD/bypass.exe" & sleep 3; WINEDLLOVERRIDES="dxgi=n,b" VKD3D_SHADER_CACHE_PATH=0 "${STEAM_COMPAT_TOOL_PATHS%:*}"/proton run "$PWD/F1_25.exe"; pkill "F1_25.exe"
 ```
 
-Enable Ally Impulse and disable Steam Input for the game. This command assumes the bypass is already set up, `bypass.exe` and `F1_25.exe` are in the game directory, and Ally Impulse is installed at the path shown. The final `pkill` targets processes named `F1_25.exe`. This is the user-reported launch command, not an independently tested configuration.
+Enable Ally Impulse and disable Steam Input for the game. This command assumes the bypass is already set up, `bypass.exe` and `F1_25.exe` are in the game directory, and Ally Impulse is installed at the path shown. The final `pkill` targets processes named `F1_25.exe`.
 
 ## How it works
 
