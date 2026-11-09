@@ -93,10 +93,10 @@ The tool checks both DLL hashes, saves backups and patches both copies. Unknown 
 For the reported working FM Tools/Xodus setup, use this complete command in **Properties → General → Launch Options**, including `PROTON_SPOOF_STEAMINPUT_VIDPID=0`:
 
 ```text
-PROTON_SPOOF_STEAMINPUT_VIDPID=0 PRESSURE_VESSEL_FILESYSTEMS_RW=/run/user/1000/xodus.sock WINEDLLOVERRIDES=xgameruntime=b PROTON_VKD3D_HEAP=1 VKD3D_CONFIG=skip_application_workarounds,descriptor_heap,avoid_image_buffer_aliasing "$HOME/homebrew/plugins/ally-impulse/game-env.sh" /bin/bash "$HOME/Documents/forza-launch.sh" %command%
+PROTON_SPOOF_STEAMINPUT_VIDPID=0 PRESSURE_VESSEL_FILESYSTEMS_RW=/run/user/1000/xodus.sock WINEDLLOVERRIDES=xgameruntime=b PROTON_VKD3D_HEAP=1 VKD3D_CONFIG=skip_application_workarounds,descriptor_heap,avoid_image_buffer_aliasing "$HOME/homebrew/plugins/ally-impulse/game-env.sh" /bin/bash "$HOME/homebrew/plugins/ally-impulse/forza-launch.sh" %command%
 ```
 
-This requires an existing `$HOME/Documents/forza-launch.sh` wrapper that starts Xodus and launches the game; Ally Impulse does not supply that script. Adjust the socket and file paths to match the installation. `/run/user/1000` assumes the Steam user’s numeric UID is `1000`.
+The plugin includes `forza-launch.sh`, which starts Xodus and launches the game. It expects FM Tools at `$HOME/Documents/fm-tools-main/xodus`; add `XODUS_DIR="/path/to/xodus"` before the launch command if installed elsewhere. Complete the FM Tools/Xodus login setup first; the wrapper does not install FM Tools. Launch diagnostics are written to `$HOME/forza-launch.log`. Adjust the socket and file paths to match the installation. `/run/user/1000` assumes the Steam user’s numeric UID is `1000`.
 
 To undo, close Motorsport and run:
 
